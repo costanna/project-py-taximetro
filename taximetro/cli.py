@@ -1,3 +1,6 @@
+import getpass
+
+from taximetro.auth import CredencialesInvalidasError, GestorUsuarios
 from taximetro.config import cargar_tarifas
 from taximetro.core import ESTADO_MOVIMIENTO, ESTADO_PARADO, Taximetro
 from taximetro.logger import get_logger
@@ -6,6 +9,33 @@ from taximetro.storage import AlmacenCarreras
 logger = get_logger(__name__)
 
 COMANDOS_VALIDOS = {"m", "p", "f"}
+MAX_INTENTOS_LOGIN = 3
+
+
+def autenticar(gestor):
+    if not gestor.existe_algun_usuario():
+        print("\n🔐 Primer arranque: crea el usuario del taxímetro.")
+        username = input("Nuevo usuario: ").strip()
+        password = getpass.getpass("Nueva contraseña: ")
+        gestor.crear_usuario(username, password)
+        logger.info("Usuario inicial creado desde CLI: %s", username)
+        print(f"✅ Usuario '{username}' creado.")
+        return username
+
+    for _ in range(MAX_INTENTOS_LOGIN):
+        username = input("\nUsuario: ").strip()
+        password = getpass.getpass("Contraseña: ")
+        try:
+            gestor.verificar_credenciales(username, password)
+        except CredencialesInvalidasError:
+            print("⚠️  Usuario o contraseña incorrectos.")
+            continue
+        print(f"✅ Bienvenido, {username}.")
+        return username
+
+    logger.warning("Acceso al CLI bloqueado tras %s intentos fallidos.", MAX_INTENTOS_LOGIN)
+    print("\n🚫 Demasiados intentos fallidos. Cerrando.")
+    raise SystemExit(1)
 
 
 def mostrar_instrucciones(taximetro):
@@ -63,9 +93,11 @@ def main():
     tarifas = cargar_tarifas()
     taximetro = Taximetro(**tarifas)
     almacen = AlmacenCarreras()
+    gestor_usuarios = GestorUsuarios()
     logger.info("Taxímetro arrancado. Tarifas: %s", tarifas)
 
     mostrar_instrucciones(taximetro)
+    autenticar(gestor_usuarios)
 
     while True:
         respuesta = input("\n¿Iniciar nueva carrera? (s/n): ").strip().lower()

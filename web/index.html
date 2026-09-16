@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f7a5c" />
+  <title>Taxímetro Digital</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <p id="banner-conexion" class="banner-conexion" role="status" hidden></p>
+
+  <main class="app">
+    <header class="app__header">
+      <h1>🚕 Taxímetro Digital</h1>
+      <div class="app__header-derecha">
+        <span id="chip-estado" class="chip chip--parado" role="status" aria-live="polite" hidden>PARADO</span>
+        <button id="boton-logout" class="boton-icono" type="button" title="Cerrar sesión" hidden>⏻</button>
+      </div>
+    </header>
+
+    <section id="pantalla-login" class="tarjeta">
+      <h2>Acceso</h2>
+      <p class="ayuda">Introduce tus credenciales para operar el taxímetro.</p>
+      <form id="form-login" class="formulario">
+        <label>Usuario<input id="input-usuario" type="text" autocomplete="username" required /></label>
+        <label>Contraseña<input id="input-password" type="password" autocomplete="current-password" required /></label>
+        <button type="submit" id="boton-login" class="boton boton--primario">
+          <span class="boton__texto">Entrar</span>
+          <span class="spinner" hidden aria-hidden="true"></span>
+        </button>
+      </form>
+      <p id="error-login" class="error" role="alert" hidden></p>
+    </section>
+
+    <section id="pantalla-taximetro" class="tarjeta" hidden aria-busy="true">
+      <div class="importe" role="status" aria-live="polite" aria-atomic="true">
+        <div class="importe__linea">
+          <span class="importe__valor" id="importe-actual">0.00</span>
+          <span class="importe__moneda">€</span>
+        </div>
+        <span class="importe__duracion" id="duracion-actual" hidden>00:00</span>
+      </div>
+
+      <div class="botonera">
+        <button id="boton-iniciar" class="boton boton--grande boton--iniciar">▶ Iniciar carrera</button>
+        <button id="boton-parado" class="boton boton--grande boton--parado" disabled>🛑 Parado</button>
+        <button id="boton-movimiento" class="boton boton--grande boton--movimiento" disabled>🚗 En movimiento</button>
+        <button id="boton-finalizar" class="boton boton--grande boton--finalizar" disabled>🏁 Finalizar</button>
+      </div>
+
+      <p id="error-accion" class="error error--flotante" role="alert" hidden></p>
+
+      <details id="panel-historial" class="historial">
+        <summary>📋 Historial de hoy</summary>
+        <p><strong>Recaudado hoy:</strong> <span id="total-hoy">0.00</span> €</p>
+        <ul id="lista-historial"></ul>
+      </details>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
