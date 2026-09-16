@@ -1,0 +1,120 @@
+import pytest
+
+
+def registrar_y_loguear(cliente, username="responsable", password="clave-segura-123"):
+    cliente.post("/api/auth/registro", json={"username": username, "password": password})
+    respuesta = cliente.post("/api/auth/login", json={"username": username, "password": password})
+    return respuesta.get_json()["token"]
+
+
+def cabeceras(token):
+    return {"Authorization": f"Bearer {token}"}
+
+
+def test_endpoints_de_carrera_requieren_token(cliente):
+    respuesta = cliente.post("/api/carreras/iniciar")
+    assert respuesta.status_code == 401
+
+
+def test_registro_login_y_flujo_completo_de_carrera(cliente):
+    token = registrar_y_loguear(cliente)
+
+    respuesta = cliente.post("/api/carreras/iniciar", headers=cabeceras(token))
+    assert respuesta.status_code == 200
+    assert respuesta.get_json()["estado"] == "parado"
+
+    respuesta = cliente.post(
+        "/api/carreras/estado", headers=cabeceras(token), json={"estado": "movimiento"}
+    )
+    assert respuesta.status_code == 200
+    assert respuesta.get_json()["estado"] == "movimiento"
+
+    respuesta = cliente.post("/api/carreras/finalizar", headers=cabeceras(token))
+    assert respuesta.status_code == 200
+    cuerpo = respuesta.get_json()
+    assert "importe_total" in cuerpo
+    assert cuerpo["importe_total"] >= 0
+
+
+def test_actual_incluye_duracion_de_la_carrera_en_curso(cliente):
+    token = registrar_y_loguear(cliente)
+    cliente.post("/api/carreras/iniciar", headers=cabeceras(token))
+
+    respuesta = cliente.get("/api/carreras/actual", headers=cabeceras(token))
+    assert respuesta.status_code == 200
+    assert "duracion_actual" in respuesta.get_json()
+
+
+def test_historial_incluye_carreras_finalizadas(cliente):
+    token = registrar_y_loguear(cliente)
+    cliente.post("/api/carreras/iniciar", headers=cabeceras(token))
+    cliente.post("/api/carreras/finalizar", headers=cabeceras(token))
+
+    respuesta = cliente.get("/api/carreras/historial", headers=cabeceras(token))
+    assert respuesta.status_code == 200
+    cuerpo = respuesta.get_json()
+    assert len(cuerpo["carreras"]) == 1
+
+
+def test_no_se_puede_registrar_dos_veces(cliente):
+    registrar_y_loguear(cliente)
+    respuesta = cliente.post(
+        "/api/auth/registro", json={"username": "otro", "password": "otra-clave"}
+    )
+    assert respuesta.status_code == 409
+
+
+def test_login_con_password_incorrecta_devuelve_401(cliente):
+    registrar_y_loguear(cliente)
+    respuesta = cliente.post(
+        "/api/auth/login", json={"username": "responsable", "password": "incorrecta"}
+    )
+    assert respuesta.status_code == 401
+
+
+def test_cambiar_estado_sin_carrera_en_curso_devuelve_409(cliente):
+    token = registrar_y_loguear(cliente)
+    respuesta = cliente.post(
+        "/api/carreras/estado", headers=cabeceras(token), json={"estado": "movimiento"}
+    )
+    assert respuesta.status_code == 409
+
+
+def test_estado_invalido_devuelve_400(cliente):
+    token = registrar_y_loguear(cliente)
+    cliente.post("/api/carreras/iniciar", headers=cabeceras(token))
+    respuesta = cliente.post(
+        "/api/carreras/estado", headers=cabeceras(token), json={"estado": "volando"}
+    )
+    assert respuesta.status_code == 400
+
+
+def test_token_invalido_es_rechazado(cliente):
+    respuesta = cliente.get(
+        "/api/carreras/historial", headers={"Authorization": "Bearer token-falso"}
+    )
+    assert respuesta.status_code == 401
+
+
+@pytest.mark.parametrize("dos_apps_independientes", [True])
+def test_dos_apps_no_comparten_estado(dos_apps_independientes, tmp_path):
+    from taximetro.api import create_app
+
+    app_a = create_app(
+        ruta_bd=tmp_path / "a.db",
+        ruta_usuarios=tmp_path / "a_usuarios.json",
+        ruta_config=tmp_path / "no_existe.json",
+    )
+    app_b = create_app(
+        ruta_bd=tmp_path / "b.db",
+        ruta_usuarios=tmp_path / "b_usuarios.json",
+        ruta_config=tmp_path / "no_existe.json",
+    )
+
+    cliente_a = app_a.test_client()
+    cliente_b = app_b.test_client()
+
+    token_a = registrar_y_loguear(cliente_a, username="a", password="clave-a-123")
+
+    respuesta = cliente_b.get("/api/carreras/historial", headers=cabeceras(token_a))
+    assert respuesta.status_code == 401

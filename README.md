@@ -128,6 +128,105 @@ El historial migra de fichero plano a base de datos relacional. La lógica de ne
 
 ---
 
+## ✅ Estado actual del proyecto
+
+Las cuatro fases están implementadas sobre el mismo paquete `taximetro/`,
+reutilizando la lógica de negocio entre el CLI y la API:
+
+| Fase | Historias | Estado | Dónde está |
+| --- | --- | --- | --- |
+| 1 — MVP funcional | US-01 a US-04 | ✅ | [`taximetro/core.py`](taximetro/core.py), [`taximetro/cli.py`](taximetro/cli.py) |
+| 2 — Observabilidad y persistencia | US-05, US-06, US-07 | ✅ | [`taximetro/logger.py`](taximetro/logger.py), [`taximetro/storage.py`](taximetro/storage.py), [`taximetro/config.py`](taximetro/config.py) |
+| 3 — Arquitectura y UX | US-08, US-09 | ✅ | [`taximetro/auth.py`](taximetro/auth.py), [`web/`](web/) |
+| 4 — Producción | — | ✅ | [`taximetro/api.py`](taximetro/api.py) (API REST + BD SQLite + web servida) |
+
+Notas de alcance del prototipo:
+
+- La API modela **un taxi por instancia** (un `Taximetro` en memoria por
+  proceso), suficiente para validar el concepto; escalar a flota implica
+  un `Taximetro` por vehículo/sesión, no un cambio de arquitectura.
+- El historial usa **SQLite** (cumple "base de datos que garantiza
+  integridad y permite consultas estructuradas" sin añadir infraestructura
+  para un prototipo de este tamaño); migrar a Postgres es cambiar una
+  cadena de conexión si el volumen lo pidiera.
+- Los tokens de sesión se firman con una clave por proceso
+  (`TAXIMETRO_SECRET_KEY` opcional) y caducan a las 8h (un turno).
+
+## 🚀 Puesta en marcha
+
+### Con Docker (un único comando, sin configurar el entorno)
+
+```bash
+docker compose up --build          # o: make docker-up
+```
+
+Abre `http://localhost:5000`. El historial y los usuarios se guardan en
+volúmenes (`taximetro_data`, `taximetro_logs`) que sobreviven a reinicios
+del contenedor.
+
+### En local (desarrollo)
+
+```bash
+python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+make install                       # o: pip install -r requirements-dev.txt
+make precommit-install              # activa los hooks de lint/format en cada commit
+```
+
+`requirements.txt` tiene solo las dependencias de producción (las que usa
+la imagen Docker); `requirements-dev.txt` añade encima pytest, requests,
+black, flake8, isort y pre-commit para desarrollar.
+
+**CLI (Fase 1), pide usuario/contraseña la primera vez que se ejecuta:**
+
+```bash
+python taximeter.py
+```
+
+**API + interfaz web (Fase 3/4)** — abre `http://localhost:5000`:
+
+```bash
+make run-api                        # o: python run_api.py
+```
+
+La primera vez, da de alta el usuario responsable de flota desde la propia
+web (pantalla de login) o con:
+
+```bash
+curl -X POST http://localhost:5000/api/auth/registro \
+     -H "Content-Type: application/json" \
+     -d '{"username": "responsable", "password": "cambia-esto"}'
+```
+
+**Tests (unitarios, integración y end-to-end):**
+
+```bash
+make test                           # o: pytest -v
+```
+
+**Lint y formato:**
+
+```bash
+make lint                           # comprueba
+make format                         # corrige
+```
+
+El pipeline de CI (`.github/workflows/ci.yml`) ejecuta lint + toda la
+suite de tests en cada push y PR a `main`, en Python 3.11 y 3.12.
+
+> **Windows:** el código usa emoji en los mensajes de consola. Si
+> `flake8`/`black` avisan de un error de codificación al leer algún
+> fichero, activa el modo UTF-8 de Python una vez por sesión:
+> `set PYTHONUTF8=1` (CMD) o `$env:PYTHONUTF8=1` (PowerShell). En Linux/Mac
+> no hace falta. `make` no viene instalado en Windows por defecto: usa los
+> comandos `python -m ...` equivalentes que aparecen arriba, o instala
+> `make` con Chocolatey/Scoop/WSL si prefieres los atajos del Makefile.
+
+Cómo trabaja el equipo (ramas, commits, PRs, Definition of Done) está en
+[CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
+
 ## 🛠️ Restricciones Técnicas
 
 El lenguaje de desarrollo es **Python**. Más allá de eso, la elección de librerías, frameworks y herramientas queda en manos del equipo, que deberá justificar sus decisiones técnicas en la documentación del proyecto.

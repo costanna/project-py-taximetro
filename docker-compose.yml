@@ -1,0 +1,15 @@
+services:
+  taximetro:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - TAXIMETRO_SECRET_KEY=${TAXIMETRO_SECRET_KEY:-}
+    volumes:
+      - taximetro_data:/app/data
+      - taximetro_logs:/app/logs
+    restart: unless-stopped
+
+volumes:
+  taximetro_data:
+  taximetro_logs:

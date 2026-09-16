@@ -1,0 +1,7 @@
+# Cada PR que toque estas rutas necesita revisión de la persona/equipo indicada.
+# Ajustar según se incorpore gente al Backend Squad.
+
+*                   @annahico
+/taximetro/api.py   @annahico
+/taximetro/auth.py  @annahico
+/web/               @annahico
