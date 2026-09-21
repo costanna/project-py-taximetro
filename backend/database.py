@@ -1,5 +1,3 @@
-"""Configuración de la conexión a la base de datos (Neon Postgres)."""
-
 import os
 
 from sqlalchemy import create_engine

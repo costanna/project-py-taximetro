@@ -1,5 +1,3 @@
-"""Modelos de datos persistidos en Neon."""
-
 import datetime
 
 from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String

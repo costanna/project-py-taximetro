@@ -1,21 +1,7 @@
-"""
-Taxímetro Digital — TaxiTech Solutions
-Fase 1 — MVP Funcional (US-01 a US-04)
-
-CLI que permite a un taxista iniciar una carrera, alternar entre estado
-"parado" y "en movimiento", y finalizar la carrera para obtener el importe
-total a cobrar. El importe se acumula de forma continua en función del
-tiempo real transcurrido en cada estado.
-
-Tarifas vigentes (Zona EMT Madrid, junio 2025):
-  - Parado o velocidad < 20 km/h: 0.02 €/segundo
-  - En movimiento:                0.05 €/segundo
-"""
-
 import time
 
-TARIFA_PARADO = 0.02    # €/segundo
-TARIFA_MOVIMIENTO = 0.05  # €/segundo
+TARIFA_PARADO = 0.02
+TARIFA_MOVIMIENTO = 0.05
 
 ESTADO_PARADO = "parado"
 ESTADO_MOVIMIENTO = "movimiento"
@@ -24,8 +10,6 @@ COMANDOS_VALIDOS = {"m", "p", "f"}
 
 
 class Taximetro:
-    """Gestiona el estado y el cálculo de tarifa de una única carrera."""
-
     def __init__(self):
         self.estado = None
         self.importe_acumulado = 0.0

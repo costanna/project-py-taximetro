@@ -1,5 +1,3 @@
-"""Esquemas Pydantic de entrada/salida de la API."""
-
 import datetime
 from typing import Literal, Optional
 

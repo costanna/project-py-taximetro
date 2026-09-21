@@ -1,15 +1,3 @@
-"""
-API REST del Taxímetro Digital — TaxiTech Solutions.
-
-Expone la misma lógica de tarifas de `taximeter.py` (Fase 1), pero persistida
-en base de datos (Neon Postgres) en lugar de en memoria, para poder ser
-consumida por el frontend web y por futuras integraciones.
-
-Tarifas vigentes (Zona EMT Madrid, junio 2025):
-  - Parado o velocidad < 20 km/h: 0.02 €/segundo
-  - En movimiento:                0.05 €/segundo
-"""
-
 import datetime
 import os
 
