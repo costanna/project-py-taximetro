@@ -16,7 +16,10 @@ arrancar (`Base.metadata.create_all`).
 ## 2. Backend — Render
 
 1. En [render.com](https://render.com), **New > Web Service**, conecta este
-   repositorio.
+   repositorio desde la pestaña **Git Provider** (GitHub) y, cuando GitHub lo
+   pida, da acceso a la organización `IA-P1-BCN` y a este repositorio.
+   La pestaña *Public Git Repository* solo funciona con repositorios públicos:
+   si el repositorio es privado, dará "Repository not found".
 2. Si Render detecta el `render.yaml` de la raíz, usará esta configuración
    automáticamente (Blueprint). Si prefieres configurarlo a mano:
    - **Root Directory:** `backend`
