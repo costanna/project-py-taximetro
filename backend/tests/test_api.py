@@ -18,6 +18,20 @@ def test_endpoints_de_carrera_requieren_token(cliente):
     assert respuesta.status_code == 401
 
 
+def test_login_devuelve_username_y_rol(cliente):
+    cliente.post("/auth/registro", json={"username": "jefa", "password": "clave-jefa-123"})
+    respuesta = cliente.post("/auth/login", json={"username": "jefa", "password": "clave-jefa-123"})
+    cuerpo = respuesta.json()
+    assert cuerpo["username"] == "jefa"
+    assert cuerpo["rol"] == "responsable"
+
+
+def test_carreras_devuelven_el_conductor_que_las_hizo(cliente):
+    token = registrar_y_loguear(cliente, username="conductor_x", password="clave-x-12345")
+    respuesta = cliente.post("/carreras", headers=cabeceras(token))
+    assert respuesta.json()["usuario"] == "conductor_x"
+
+
 def test_registro_login_y_flujo_completo_de_carrera(cliente):
     token = registrar_y_loguear(cliente)
 

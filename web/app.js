@@ -17,10 +17,13 @@
   const chipEstado = $("chip-estado");
   const botonLogout = $("boton-logout");
   const nombreUsuarioEl = $("nombre-usuario");
+  const rolUsuarioEl = $("rol-usuario");
   const importeActual = $("importe-actual");
   const duracionActual = $("duracion-actual");
   const totalHoy = $("total-hoy");
   const listaHistorial = $("lista-historial");
+  const resumenConductoresEl = $("resumen-conductores");
+  const listaResumenConductoresEl = $("lista-resumen-conductores");
 
   const botonIniciar = $("boton-iniciar");
   const botonParado = $("boton-parado");
@@ -43,6 +46,7 @@
 
   let token = null;
   let nombreUsuario = null;
+  let rolUsuario = null;
   let intervaloActualizacion = null;
   let fallosConsecutivos = 0;
   let errorAccionTimeout = null;
@@ -61,17 +65,21 @@
   try {
     token = sessionStorage.getItem("taximetro_token");
     nombreUsuario = sessionStorage.getItem("taximetro_usuario");
+    rolUsuario = sessionStorage.getItem("taximetro_rol");
   } catch {
     token = null;
     nombreUsuario = null;
+    rolUsuario = null;
   }
 
-  function guardarSesion(valorToken, valorUsuario) {
+  function guardarSesion(valorToken, valorUsuario, valorRol) {
     token = valorToken;
     nombreUsuario = valorUsuario;
+    rolUsuario = valorRol;
     try {
       sessionStorage.setItem("taximetro_token", valorToken);
       sessionStorage.setItem("taximetro_usuario", valorUsuario);
+      sessionStorage.setItem("taximetro_rol", valorRol);
     } catch {
     }
   }
@@ -79,9 +87,11 @@
   function limpiarSesion() {
     token = null;
     nombreUsuario = null;
+    rolUsuario = null;
     try {
       sessionStorage.removeItem("taximetro_token");
       sessionStorage.removeItem("taximetro_usuario");
+      sessionStorage.removeItem("taximetro_rol");
     } catch {
     }
   }
@@ -176,6 +186,7 @@
     chipEstado.hidden = true;
     botonLogout.hidden = true;
     if (nombreUsuarioEl) nombreUsuarioEl.textContent = "";
+    if (rolUsuarioEl) rolUsuarioEl.textContent = "";
     ocultarBannerConexion();
   }
 
@@ -183,6 +194,9 @@
     pantallaLogin.hidden = true;
     pantallaTaximetro.hidden = false;
     botonLogout.hidden = false;
+    if (rolUsuarioEl) {
+      rolUsuarioEl.textContent = rolUsuario === "responsable" ? "responsable de flota" : "taxista";
+    }
     if (nombreUsuarioEl) nombreUsuarioEl.textContent = nombreUsuario || "";
     await sincronizarEstadoActual();
     cargarHistorial();
@@ -232,12 +246,29 @@
     }
   }
 
+  function mostrarResumenPorConductor(carreras) {
+    const totales = new Map();
+    carreras.forEach((carrera) => {
+      const conductor = carrera.usuario || "Desconocido";
+      totales.set(conductor, (totales.get(conductor) || 0) + carrera.importe_total);
+    });
+
+    listaResumenConductoresEl.innerHTML = "";
+    totales.forEach((total, conductor) => {
+      const item = document.createElement("li");
+      item.innerHTML = `<span>${conductor}</span><span>${total.toFixed(2)} €</span>`;
+      listaResumenConductoresEl.appendChild(item);
+    });
+    resumenConductoresEl.hidden = totales.size < 2;
+  }
+
   async function cargarHistorial() {
     try {
       const { carreras, total_recaudado_hoy: totalHoyValor } = await llamarApi(
         "/api/carreras/historial?limite=10"
       );
       totalHoy.textContent = Number(totalHoyValor).toFixed(2);
+      mostrarResumenPorConductor(carreras);
       listaHistorial.innerHTML = "";
       carreras.forEach((carrera) => {
         const item = document.createElement("li");
@@ -245,7 +276,7 @@
           hour: "2-digit",
           minute: "2-digit",
         });
-        item.innerHTML = `<span>${hora}</span><span>${carrera.importe_total.toFixed(2)} €</span>`;
+        item.innerHTML = `<span>${carrera.usuario || "—"} · ${hora}</span><span>${carrera.importe_total.toFixed(2)} €</span>`;
         listaHistorial.appendChild(item);
       });
     } catch {
@@ -270,14 +301,14 @@
     botonLoginTexto.textContent = "Entrando…";
     const username = $("input-usuario").value.trim();
     try {
-      const { token: nuevoToken } = await llamarApi("/api/auth/login", {
+      const { token: nuevoToken, rol } = await llamarApi("/api/auth/login", {
         method: "POST",
         body: JSON.stringify({
           username,
           password: $("input-password").value,
         }),
       });
-      guardarSesion(nuevoToken, username);
+      guardarSesion(nuevoToken, username, rol);
       await mostrarTaximetro();
     } catch (error) {
       errorLogin.textContent = error.message;
@@ -303,11 +334,11 @@
         method: "POST",
         body: JSON.stringify({ username, password }),
       });
-      const { token: nuevoToken } = await llamarApi("/api/auth/login", {
+      const { token: nuevoToken, rol } = await llamarApi("/api/auth/login", {
         method: "POST",
         body: JSON.stringify({ username, password }),
       });
-      guardarSesion(nuevoToken, username);
+      guardarSesion(nuevoToken, username, rol);
       await mostrarTaximetro();
     } catch (error) {
       errorLogin.textContent = error.message;

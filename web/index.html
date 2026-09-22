@@ -22,6 +22,7 @@
       </div>
       <div class="navbar__controles">
         <span id="nombre-usuario" class="navbar__usuario"></span>
+        <span id="rol-usuario" class="rol-usuario"></span>
         <span id="chip-estado" class="chip chip--parado" role="status" aria-live="polite" hidden>PARADO</span>
         <button id="boton-logout" class="boton-icono" type="button" title="Cerrar sesión" hidden>⏻</button>
         <a
@@ -109,9 +110,14 @@
 
       <p id="error-accion" class="error error--flotante" role="alert" hidden></p>
 
+      <div id="resumen-conductores" class="resumen" hidden>
+        <h3>Totales por conductor</h3>
+        <ul id="lista-resumen-conductores"></ul>
+      </div>
+
       <details id="panel-historial" class="historial">
         <summary>📋 Historial de hoy</summary>
-        <p><strong>Recaudado hoy:</strong> <span id="total-hoy">0.00</span> €</p>
+        <p><strong>Recaudado hoy (todos):</strong> <span id="total-hoy">0.00</span> €</p>
         <ul id="lista-historial"></ul>
       </details>
     </section>

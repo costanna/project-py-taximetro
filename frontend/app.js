@@ -31,35 +31,46 @@ document.querySelectorAll(".boton-ver-clave").forEach((boton) => {
 });
 
 const nombreUsuarioEl = document.getElementById("nombre-usuario");
+const rolUsuarioEl = document.getElementById("rol-usuario");
+const resumenConductoresEl = document.getElementById("resumen-conductores");
+const listaResumenConductoresEl = document.getElementById("lista-resumen-conductores");
+const totalGeneralEl = document.getElementById("total-general");
 
 let token = null;
 let nombreUsuario = null;
+let rolUsuario = null;
 let carreraId = null;
 let intervalo = null;
 
 try {
   token = sessionStorage.getItem("taximetro_token");
   nombreUsuario = sessionStorage.getItem("taximetro_usuario");
+  rolUsuario = sessionStorage.getItem("taximetro_rol");
 } catch {
   token = null;
   nombreUsuario = null;
+  rolUsuario = null;
 }
 
-function guardarSesion(valorToken, valorUsuario) {
+function guardarSesion(valorToken, valorUsuario, valorRol) {
   token = valorToken;
   nombreUsuario = valorUsuario;
+  rolUsuario = valorRol;
   try {
     sessionStorage.setItem("taximetro_token", valorToken);
     sessionStorage.setItem("taximetro_usuario", valorUsuario);
+    sessionStorage.setItem("taximetro_rol", valorRol);
   } catch {}
 }
 
 function limpiarSesion() {
   token = null;
   nombreUsuario = null;
+  rolUsuario = null;
   try {
     sessionStorage.removeItem("taximetro_token");
     sessionStorage.removeItem("taximetro_usuario");
+    sessionStorage.removeItem("taximetro_rol");
   } catch {}
 }
 
@@ -91,6 +102,9 @@ function mostrarTaximetro() {
   pantallaLogin.hidden = true;
   pantallaTaximetro.hidden = false;
   if (nombreUsuarioEl) nombreUsuarioEl.textContent = nombreUsuario || "";
+  if (rolUsuarioEl) {
+    rolUsuarioEl.textContent = rolUsuario === "responsable" ? "responsable de flota" : "taxista";
+  }
   cargarHistorial();
 }
 
@@ -166,6 +180,26 @@ async function refrescarCarreraActual() {
   }
 }
 
+function mostrarResumenPorConductor(carreras) {
+  const totales = new Map();
+  let totalGeneral = 0;
+
+  carreras.forEach((carrera) => {
+    const conductor = carrera.usuario || "Desconocido";
+    totales.set(conductor, (totales.get(conductor) || 0) + carrera.importe_en_vivo);
+    totalGeneral += carrera.importe_en_vivo;
+  });
+
+  listaResumenConductoresEl.innerHTML = "";
+  totales.forEach((total, conductor) => {
+    const item = document.createElement("li");
+    item.innerHTML = `<span>${conductor}</span><span>${total.toFixed(2)} €</span>`;
+    listaResumenConductoresEl.appendChild(item);
+  });
+  totalGeneralEl.textContent = `${totalGeneral.toFixed(2)} €`;
+  resumenConductoresEl.hidden = totales.size < 2;
+}
+
 async function cargarHistorial() {
   try {
     const carreras = await llamarApi("/carreras");
@@ -174,11 +208,13 @@ async function cargarHistorial() {
       const fila = document.createElement("tr");
       fila.innerHTML = `
         <td>${carrera.id}</td>
+        <td>${carrera.usuario || "—"}</td>
         <td>${carrera.en_curso ? "En curso" : "Finalizada"}</td>
         <td>${carrera.importe_en_vivo.toFixed(2)} €</td>
       `;
       historialBody.appendChild(fila);
     });
+    mostrarResumenPorConductor(carreras);
   } catch (error) {
     mostrarMensaje(`No se pudo cargar el historial: ${error.message}`);
   }
@@ -198,14 +234,14 @@ formLogin.addEventListener("submit", async (evento) => {
   mensajeLoginEl.textContent = "";
   const username = document.getElementById("input-usuario").value.trim();
   try {
-    const { token: nuevoToken } = await llamarApi("/auth/login", {
+    const { token: nuevoToken, rol } = await llamarApi("/auth/login", {
       method: "POST",
       body: JSON.stringify({
         username,
         password: document.getElementById("input-password").value,
       }),
     });
-    guardarSesion(nuevoToken, username);
+    guardarSesion(nuevoToken, username, rol);
     mostrarTaximetro();
   } catch (error) {
     mensajeLoginEl.textContent = error.message;
@@ -222,11 +258,11 @@ formRegistro.addEventListener("submit", async (evento) => {
       method: "POST",
       body: JSON.stringify({ username, password }),
     });
-    const { token: nuevoToken } = await llamarApi("/auth/login", {
+    const { token: nuevoToken, rol } = await llamarApi("/auth/login", {
       method: "POST",
       body: JSON.stringify({ username, password }),
     });
-    guardarSesion(nuevoToken, username);
+    guardarSesion(nuevoToken, username, rol);
     mostrarTaximetro();
   } catch (error) {
     mensajeLoginEl.textContent = error.message;

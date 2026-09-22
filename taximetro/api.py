@@ -65,7 +65,7 @@ def create_app(ruta_bd=None, ruta_usuarios=None, ruta_config=None, servir_web=Tr
         except CredencialesInvalidasError as exc:
             return jsonify(error=str(exc)), 401
         token = gestor_usuarios.emitir_token(username, rol)
-        return jsonify(token=token)
+        return jsonify(token=token, username=username, rol=rol)
 
     def _estado_json():
         return jsonify(

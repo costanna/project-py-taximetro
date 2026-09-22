@@ -34,3 +34,5 @@ class LoginUsuario(BaseModel):
 
 class TokenOut(BaseModel):
     token: str
+    username: str
+    rol: str

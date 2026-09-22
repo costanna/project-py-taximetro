@@ -307,6 +307,56 @@ button:disabled {
   font-size: 0.85rem;
 }
 
+.rol-usuario {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #334155;
+  color: #e2e8f0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.resumen {
+  width: 100%;
+  max-width: 420px;
+  margin-top: 24px;
+  background: #1e293b;
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.resumen h2 {
+  font-size: 1rem;
+  color: #cbd5e1;
+  margin-top: 0;
+}
+
+#lista-resumen-conductores {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#lista-resumen-conductores li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.resumen-total {
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid #334155;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+
 .pie {
   width: 100%;
   max-width: 420px;

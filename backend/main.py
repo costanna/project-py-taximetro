@@ -114,7 +114,11 @@ def login(datos: LoginUsuario, db: Session = Depends(get_db)):
         usuario_db = auth.verificar_credenciales(db, datos.username, datos.password)
     except auth.CredencialesInvalidasError as exc:
         raise HTTPException(status_code=401, detail=str(exc)) from exc
-    return {"token": auth.emitir_token(usuario_db.username, usuario_db.rol)}
+    return {
+        "token": auth.emitir_token(usuario_db.username, usuario_db.rol),
+        "username": usuario_db.username,
+        "rol": usuario_db.rol,
+    }
 
 
 @app.post("/carreras", response_model=CarreraOut, status_code=201)

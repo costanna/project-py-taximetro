@@ -142,6 +142,52 @@ body {
   display: none;
 }
 
+.rol-usuario {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--borde);
+  color: var(--texto-suave);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.rol-usuario:empty {
+  display: none;
+}
+
+.resumen {
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid var(--borde);
+}
+
+.resumen h3 {
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+  margin: 0 0 8px;
+}
+
+#lista-resumen-conductores {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#lista-resumen-conductores li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  padding: 6px 10px;
+  background: var(--fondo);
+  border-radius: 8px;
+}
+
 .navbar__icono {
   display: inline-flex;
   align-items: center;
