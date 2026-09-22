@@ -1,13 +1,12 @@
 import datetime
 import os
 
+from database import Base, engine, get_db
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-
-from database import Base, engine, get_db
 from models import Carrera
 from schemas import CambioEstado, CarreraOut
+from sqlalchemy.orm import Session
 
 TARIFA_PARADO = 0.02
 TARIFA_MOVIMIENTO = 0.05
@@ -15,9 +14,7 @@ TARIFA_MOVIMIENTO = 0.05
 app = FastAPI(title="TaxiTech Solutions — Taxímetro API")
 
 allowed_origins = [
-    origin.strip()
-    for origin in os.environ.get("ALLOWED_ORIGINS", "*").split(",")
-    if origin.strip()
+    origin.strip() for origin in os.environ.get("ALLOWED_ORIGINS", "*").split(",") if origin.strip()
 ]
 app.add_middleware(
     CORSMiddleware,

@@ -1,8 +1,7 @@
 import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String
-
 from database import Base
+from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String
 
 
 class Carrera(Base):
