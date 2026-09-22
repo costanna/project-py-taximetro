@@ -36,3 +36,13 @@ class TokenOut(BaseModel):
     token: str
     username: str
     rol: str
+
+
+class TarifasOut(BaseModel):
+    tarifa_parado: float
+    tarifa_movimiento: float
+
+
+class TarifasUpdate(BaseModel):
+    tarifa_parado: float
+    tarifa_movimiento: float

@@ -153,3 +153,60 @@ def test_no_se_puede_acceder_a_la_carrera_de_otro_usuario(cliente):
         json={"estado": "movimiento"},
     )
     assert respuesta.status_code == 404
+
+
+def test_ver_tarifas_devuelve_los_valores_por_defecto(cliente):
+    token = registrar_y_loguear(cliente)
+    respuesta = cliente.get("/tarifas", headers=cabeceras(token))
+    assert respuesta.status_code == 200
+    cuerpo = respuesta.json()
+    assert cuerpo["tarifa_parado"] > 0
+    assert cuerpo["tarifa_movimiento"] > 0
+
+
+def test_responsable_puede_actualizar_tarifas(cliente):
+    token = registrar_y_loguear(cliente)
+    respuesta = cliente.patch(
+        "/tarifas",
+        headers=cabeceras(token),
+        json={"tarifa_parado": 0.05, "tarifa_movimiento": 0.09},
+    )
+    assert respuesta.status_code == 200
+    assert respuesta.json() == {"tarifa_parado": 0.05, "tarifa_movimiento": 0.09}
+
+    respuesta = cliente.get("/tarifas", headers=cabeceras(token))
+    assert respuesta.json() == {"tarifa_parado": 0.05, "tarifa_movimiento": 0.09}
+
+
+def test_taxista_no_puede_actualizar_tarifas(cliente):
+    registrar_y_loguear(cliente, username="jefa", password="clave-jefa-12345")
+    token_taxista = registrar_y_loguear(cliente, username="conductor_c", password="clave-c-12345")
+
+    respuesta = cliente.patch(
+        "/tarifas",
+        headers=cabeceras(token_taxista),
+        json={"tarifa_parado": 0.05, "tarifa_movimiento": 0.09},
+    )
+    assert respuesta.status_code == 403
+
+
+def test_actualizar_tarifas_con_valor_negativo_falla(cliente):
+    token = registrar_y_loguear(cliente)
+    respuesta = cliente.patch(
+        "/tarifas",
+        headers=cabeceras(token),
+        json={"tarifa_parado": -1, "tarifa_movimiento": 0.09},
+    )
+    assert respuesta.status_code == 400
+
+
+def test_tarifa_actualizada_afecta_a_carreras_nuevas(cliente):
+    token = registrar_y_loguear(cliente)
+    cliente.patch(
+        "/tarifas",
+        headers=cabeceras(token),
+        json={"tarifa_parado": 1000.0, "tarifa_movimiento": 1000.0},
+    )
+    carrera = cliente.post("/carreras", headers=cabeceras(token)).json()
+    respuesta = cliente.get(f"/carreras/{carrera['id']}", headers=cabeceras(token))
+    assert respuesta.json()["importe_en_vivo"] > 0

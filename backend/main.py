@@ -10,12 +10,18 @@ import auth
 from config import cargar_tarifas
 from database import Base, engine, get_db
 from logger import get_logger
-from models import Carrera
-from schemas import CambioEstado, CarreraOut, LoginUsuario, RegistroUsuario, TokenOut
+from models import Carrera, Tarifas
+from schemas import (
+    CambioEstado,
+    CarreraOut,
+    LoginUsuario,
+    RegistroUsuario,
+    TarifasOut,
+    TarifasUpdate,
+    TokenOut,
+)
 
 logger = get_logger(__name__)
-
-TARIFAS = cargar_tarifas()
 
 app = FastAPI(title="TaxiTech Solutions — Taxímetro API")
 
@@ -39,30 +45,40 @@ class Identidad:
 @app.on_event("startup")
 def on_startup():
     Base.metadata.create_all(bind=engine)
-    logger.info(
-        "Taximetro API arrancada. Tarifas: parado=%.3f movimiento=%.3f",
-        TARIFAS["tarifa_parado"],
-        TARIFAS["tarifa_movimiento"],
-    )
+    logger.info("Taximetro API arrancada.")
 
 
-def _tarifa(estado: str) -> float:
-    return TARIFAS["tarifa_parado"] if estado == "parado" else TARIFAS["tarifa_movimiento"]
+def _obtener_tarifas(db: Session) -> Tarifas:
+    fila = db.query(Tarifas).first()
+    if fila is None:
+        semilla = cargar_tarifas()
+        fila = Tarifas(
+            tarifa_parado=semilla["tarifa_parado"],
+            tarifa_movimiento=semilla["tarifa_movimiento"],
+        )
+        db.add(fila)
+        db.commit()
+        db.refresh(fila)
+    return fila
 
 
-def _acumular_hasta_ahora(carrera: Carrera) -> None:
+def _tarifa(estado: str, tarifas: Tarifas) -> float:
+    return tarifas.tarifa_parado if estado == "parado" else tarifas.tarifa_movimiento
+
+
+def _acumular_hasta_ahora(carrera: Carrera, tarifas: Tarifas) -> None:
     ahora = datetime.datetime.utcnow()
     segundos_transcurridos = (ahora - carrera.ultimo_cambio).total_seconds()
-    carrera.importe_acumulado += segundos_transcurridos * _tarifa(carrera.estado)
+    carrera.importe_acumulado += segundos_transcurridos * _tarifa(carrera.estado, tarifas)
     carrera.ultimo_cambio = ahora
 
 
-def _con_importe_en_vivo(carrera: Carrera) -> Carrera:
+def _con_importe_en_vivo(carrera: Carrera, tarifas: Tarifas) -> Carrera:
     if carrera.en_curso:
         ahora = datetime.datetime.utcnow()
         segundos_transcurridos = (ahora - carrera.ultimo_cambio).total_seconds()
         carrera.importe_en_vivo = round(
-            carrera.importe_acumulado + segundos_transcurridos * _tarifa(carrera.estado), 2
+            carrera.importe_acumulado + segundos_transcurridos * _tarifa(carrera.estado, tarifas), 2
         )
     else:
         carrera.importe_en_vivo = round(carrera.importe_acumulado, 2)
@@ -95,6 +111,14 @@ def requiere_token(authorization: str = Header(default="")) -> Identidad:
     return Identidad(username=datos["username"], rol=datos["rol"])
 
 
+def requiere_responsable(identidad: Identidad = Depends(requiere_token)) -> Identidad:
+    if identidad.rol != "responsable":
+        raise HTTPException(
+            status_code=403, detail="Solo el responsable de flota puede hacer esto."
+        )
+    return identidad
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
@@ -121,6 +145,33 @@ def login(datos: LoginUsuario, db: Session = Depends(get_db)):
     }
 
 
+@app.get("/tarifas", response_model=TarifasOut)
+def ver_tarifas(db: Session = Depends(get_db), identidad: Identidad = Depends(requiere_token)):
+    return _obtener_tarifas(db)
+
+
+@app.patch("/tarifas", response_model=TarifasOut)
+def actualizar_tarifas(
+    datos: TarifasUpdate,
+    db: Session = Depends(get_db),
+    identidad: Identidad = Depends(requiere_responsable),
+):
+    if datos.tarifa_parado <= 0 or datos.tarifa_movimiento <= 0:
+        raise HTTPException(status_code=400, detail="Las tarifas deben ser positivas.")
+    fila = _obtener_tarifas(db)
+    fila.tarifa_parado = datos.tarifa_parado
+    fila.tarifa_movimiento = datos.tarifa_movimiento
+    db.commit()
+    db.refresh(fila)
+    logger.info(
+        "[%s] Tarifas actualizadas: parado=%.3f movimiento=%.3f",
+        identidad.username,
+        fila.tarifa_parado,
+        fila.tarifa_movimiento,
+    )
+    return fila
+
+
 @app.post("/carreras", response_model=CarreraOut, status_code=201)
 def iniciar_carrera(db: Session = Depends(get_db), identidad: Identidad = Depends(requiere_token)):
     ahora = datetime.datetime.utcnow()
@@ -136,7 +187,7 @@ def iniciar_carrera(db: Session = Depends(get_db), identidad: Identidad = Depend
     db.commit()
     db.refresh(carrera)
     logger.info("[%s] Carrera #%s iniciada.", identidad.username, carrera.id)
-    return _con_importe_en_vivo(carrera)
+    return _con_importe_en_vivo(carrera, _obtener_tarifas(db))
 
 
 @app.patch("/carreras/{carrera_id}/estado", response_model=CarreraOut)
@@ -147,13 +198,14 @@ def cambiar_estado(
     identidad: Identidad = Depends(requiere_token),
 ):
     carrera = _obtener_carrera_activa(carrera_id, db, identidad)
+    tarifas = _obtener_tarifas(db)
     if cambio.estado != carrera.estado:
-        _acumular_hasta_ahora(carrera)
+        _acumular_hasta_ahora(carrera, tarifas)
         carrera.estado = cambio.estado
         db.commit()
         db.refresh(carrera)
         logger.info("[%s] Carrera #%s -> %s", identidad.username, carrera_id, cambio.estado)
-    return _con_importe_en_vivo(carrera)
+    return _con_importe_en_vivo(carrera, tarifas)
 
 
 @app.post("/carreras/{carrera_id}/finalizar", response_model=CarreraOut)
@@ -163,7 +215,8 @@ def finalizar_carrera(
     identidad: Identidad = Depends(requiere_token),
 ):
     carrera = _obtener_carrera_activa(carrera_id, db, identidad)
-    _acumular_hasta_ahora(carrera)
+    tarifas = _obtener_tarifas(db)
+    _acumular_hasta_ahora(carrera, tarifas)
     carrera.en_curso = False
     carrera.fin = datetime.datetime.utcnow()
     db.commit()
@@ -174,7 +227,7 @@ def finalizar_carrera(
         carrera_id,
         carrera.importe_acumulado,
     )
-    return _con_importe_en_vivo(carrera)
+    return _con_importe_en_vivo(carrera, tarifas)
 
 
 @app.get("/carreras", response_model=list[CarreraOut])
@@ -183,7 +236,8 @@ def listar_carreras(db: Session = Depends(get_db), identidad: Identidad = Depend
     if identidad.rol != "responsable":
         consulta = consulta.filter(Carrera.usuario == identidad.username)
     carreras = consulta.order_by(Carrera.inicio.desc()).all()
-    return [_con_importe_en_vivo(c) for c in carreras]
+    tarifas = _obtener_tarifas(db)
+    return [_con_importe_en_vivo(c, tarifas) for c in carreras]
 
 
 @app.get("/carreras/{carrera_id}", response_model=CarreraOut)
@@ -193,4 +247,4 @@ def obtener_carrera(
     identidad: Identidad = Depends(requiere_token),
 ):
     carrera = _obtener_carrera_propia(carrera_id, db, identidad)
-    return _con_importe_en_vivo(carrera)
+    return _con_importe_en_vivo(carrera, _obtener_tarifas(db))
