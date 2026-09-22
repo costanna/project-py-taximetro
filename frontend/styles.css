@@ -230,6 +230,38 @@ button:disabled {
   background: #0f172a;
   color: #f8fafc;
   font-size: 1rem;
+  width: 100%;
+}
+
+.campo-clave {
+  position: relative;
+  display: flex;
+}
+
+.campo-clave input {
+  padding-right: 42px;
+}
+
+.boton-ver-clave {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.boton-ver-clave:hover {
+  color: #f8fafc;
+  background: #334155;
 }
 
 #btn-login,
