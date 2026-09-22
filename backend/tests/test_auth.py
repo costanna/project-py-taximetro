@@ -46,23 +46,35 @@ def test_verificar_usuario_inexistente_lanza(db):
         auth.verificar_credenciales(db, "fantasma", "lo-que-sea")
 
 
+def test_primer_usuario_creado_es_responsable(db):
+    usuario = auth.crear_usuario(db, "taxista1", "supersecreta")
+    assert usuario.rol == "responsable"
+
+
+def test_segundo_usuario_creado_es_taxista(db):
+    auth.crear_usuario(db, "taxista1", "supersecreta")
+    usuario = auth.crear_usuario(db, "taxista2", "otra-clave-1234")
+    assert usuario.rol == "taxista"
+
+
 def test_token_emitido_se_puede_validar(monkeypatch):
     monkeypatch.setenv("SECRET_KEY", "clave-de-test")
-    token = auth.emitir_token("taxista1")
-    assert auth.usuario_del_token(token) == "taxista1"
+    token = auth.emitir_token("taxista1", "taxista")
+    assert auth.datos_del_token(token) == {"username": "taxista1", "rol": "taxista"}
 
 
 def test_token_manipulado_es_invalido(monkeypatch):
     monkeypatch.setenv("SECRET_KEY", "clave-de-test")
-    token = auth.emitir_token("taxista1")
-    token_manipulado = token[:-1] + ("a" if token[-1] != "a" else "b")
+    token = auth.emitir_token("taxista1", "taxista")
+    mitad = len(token) // 2
+    token_manipulado = token[:mitad] + ("a" if token[mitad] != "a" else "b") + token[mitad + 1 :]
     with pytest.raises(auth.TokenInvalidoError):
-        auth.usuario_del_token(token_manipulado)
+        auth.datos_del_token(token_manipulado)
 
 
 def test_token_con_otra_clave_secreta_es_invalido(monkeypatch):
     monkeypatch.setenv("SECRET_KEY", "clave-a")
-    token = auth.emitir_token("taxista1")
+    token = auth.emitir_token("taxista1", "taxista")
     monkeypatch.setenv("SECRET_KEY", "clave-b")
     with pytest.raises(auth.TokenInvalidoError):
-        auth.usuario_del_token(token)
+        auth.datos_del_token(token)

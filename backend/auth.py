@@ -43,11 +43,16 @@ def existe_usuario(db: Session, username: str) -> bool:
 
 
 def crear_usuario(db: Session, username: str, password: str) -> Usuario:
-    usuario = Usuario(username=username, password_hash=generate_password_hash(password))
+    es_el_primero = db.query(Usuario).first() is None
+    usuario = Usuario(
+        username=username,
+        password_hash=generate_password_hash(password),
+        rol="responsable" if es_el_primero else "taxista",
+    )
     db.add(usuario)
     db.commit()
     db.refresh(usuario)
-    logger.info("Usuario creado: %s", username)
+    logger.info("Usuario creado: %s (rol=%s)", username, usuario.rol)
     return usuario
 
 
@@ -60,15 +65,15 @@ def verificar_credenciales(db: Session, username: str, password: str) -> Usuario
     return usuario
 
 
-def emitir_token(username: str) -> str:
-    return _serializador().dumps({"username": username})
+def emitir_token(username: str, rol: str) -> str:
+    return _serializador().dumps({"username": username, "rol": rol})
 
 
-def usuario_del_token(token: str) -> str:
+def datos_del_token(token: str) -> dict:
     try:
         datos = _serializador().loads(token, max_age=DURACION_TOKEN_SEGUNDOS)
     except SignatureExpired as exc:
         raise TokenInvalidoError("El token ha caducado, vuelve a iniciar sesión.") from exc
     except BadSignature as exc:
         raise TokenInvalidoError("Token inválido.") from exc
-    return datos["username"]
+    return {"username": datos["username"], "rol": datos.get("rol", "taxista")}

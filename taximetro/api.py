@@ -23,9 +23,11 @@ def requiere_token(vista):
         token = cabecera.removeprefix("Bearer ").strip()
         gestor_usuarios = current_app.config["gestor_usuarios"]
         try:
-            g.username = gestor_usuarios.usuario_del_token(token)
+            datos = gestor_usuarios.datos_del_token(token)
         except TokenInvalidoError as exc:
             return jsonify(error=str(exc)), 401
+        g.username = datos["username"]
+        g.rol = datos["rol"]
         return vista(*args, **kwargs)
 
     return envoltura
@@ -59,10 +61,10 @@ def create_app(ruta_bd=None, ruta_usuarios=None, ruta_config=None, servir_web=Tr
         datos = request.get_json(silent=True) or {}
         username, password = datos.get("username"), datos.get("password")
         try:
-            gestor_usuarios.verificar_credenciales(username, password)
+            rol = gestor_usuarios.verificar_credenciales(username, password)
         except CredencialesInvalidasError as exc:
             return jsonify(error=str(exc)), 401
-        token = gestor_usuarios.emitir_token(username)
+        token = gestor_usuarios.emitir_token(username, rol)
         return jsonify(token=token)
 
     def _estado_json():
@@ -117,9 +119,10 @@ def create_app(ruta_bd=None, ruta_usuarios=None, ruta_config=None, servir_web=Tr
     @requiere_token
     def historial():
         limite = request.args.get("limite", type=int)
+        usuario_filtro = None if g.rol == "responsable" else g.username
         return jsonify(
-            carreras=almacen.historial(usuario=g.username, limite=limite),
-            total_recaudado_hoy=round(almacen.total_recaudado_hoy(usuario=g.username), 2),
+            carreras=almacen.historial(usuario=usuario_filtro, limite=limite),
+            total_recaudado_hoy=round(almacen.total_recaudado_hoy(usuario=usuario_filtro), 2),
         )
 
     if servir_web and RUTA_WEB.exists():

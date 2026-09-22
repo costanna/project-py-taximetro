@@ -104,6 +104,26 @@ def test_cada_usuario_solo_ve_su_propio_historial(cliente):
     assert len(historial_b) == 0
 
 
+def test_el_responsable_ve_el_historial_de_todos(cliente):
+    token_responsable = registrar_y_loguear(
+        cliente, username="jefa_flota", password="clave-jefa-12345"
+    )
+    token_taxista = registrar_y_loguear(cliente, username="conductor_b", password="clave-b-12345")
+
+    carrera_taxista = cliente.post("/carreras", headers=cabeceras(token_taxista)).json()
+    cliente.post(f"/carreras/{carrera_taxista['id']}/finalizar", headers=cabeceras(token_taxista))
+
+    historial_responsable = cliente.get("/carreras", headers=cabeceras(token_responsable)).json()
+    historial_taxista = cliente.get("/carreras", headers=cabeceras(token_taxista)).json()
+    assert len(historial_responsable) == 1
+    assert len(historial_taxista) == 1
+
+    respuesta = cliente.get(
+        f"/carreras/{carrera_taxista['id']}", headers=cabeceras(token_responsable)
+    )
+    assert respuesta.status_code == 200
+
+
 def test_no_se_puede_acceder_a_la_carrera_de_otro_usuario(cliente):
     token_a = registrar_y_loguear(cliente, username="conductor_a", password="clave-a-12345")
     token_b = registrar_y_loguear(cliente, username="conductor_b", password="clave-b-12345")

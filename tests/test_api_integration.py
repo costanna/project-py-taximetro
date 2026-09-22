@@ -97,6 +97,27 @@ def test_estado_invalido_devuelve_400(cliente):
     assert respuesta.status_code == 400
 
 
+def test_el_responsable_ve_el_historial_de_todos(cliente):
+    token_responsable = registrar_y_loguear(
+        cliente, username="jefa_flota", password="clave-jefa-123"
+    )
+    cliente.post("/api/carreras/iniciar", headers=cabeceras(token_responsable))
+    cliente.post("/api/carreras/finalizar", headers=cabeceras(token_responsable))
+
+    token_taxista = registrar_y_loguear(cliente, username="conductor_b", password="clave-b-123")
+    cliente.post("/api/carreras/iniciar", headers=cabeceras(token_taxista))
+    cliente.post("/api/carreras/finalizar", headers=cabeceras(token_taxista))
+
+    historial_responsable = cliente.get(
+        "/api/carreras/historial", headers=cabeceras(token_responsable)
+    ).get_json()
+    historial_taxista = cliente.get(
+        "/api/carreras/historial", headers=cabeceras(token_taxista)
+    ).get_json()
+    assert len(historial_responsable["carreras"]) == 2
+    assert len(historial_taxista["carreras"]) == 1
+
+
 def test_cada_usuario_solo_ve_su_propio_historial(cliente):
     token_a = registrar_y_loguear(cliente, username="conductor_a", password="clave-a-123")
     token_b = registrar_y_loguear(cliente, username="conductor_b", password="clave-b-123")

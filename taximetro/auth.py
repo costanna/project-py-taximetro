@@ -26,6 +26,14 @@ def _clave_secreta():
     return os.environ.get("TAXIMETRO_SECRET_KEY") or secrets.token_hex(32)
 
 
+def _hash_de(registro):
+    return registro["password_hash"] if isinstance(registro, dict) else registro
+
+
+def _rol_de(registro):
+    return registro.get("rol", "taxista") if isinstance(registro, dict) else "taxista"
+
+
 class GestorUsuarios:
     def __init__(self, ruta_usuarios=RUTA_USUARIOS_DEFECTO, clave_secreta=None):
         self.ruta_usuarios = Path(ruta_usuarios)
@@ -48,26 +56,30 @@ class GestorUsuarios:
 
     def crear_usuario(self, username, password):
         usuarios = self._leer_usuarios()
-        usuarios[username] = generate_password_hash(password)
+        rol = "responsable" if not usuarios else "taxista"
+        usuarios[username] = {"password_hash": generate_password_hash(password), "rol": rol}
         self._escribir_usuarios(usuarios)
-        logger.info("Usuario creado: %s", username)
+        logger.info("Usuario creado: %s (rol=%s)", username, rol)
+        return rol
 
     def verificar_credenciales(self, username, password):
         usuarios = self._leer_usuarios()
-        hash_guardado = usuarios.get(username)
+        registro = usuarios.get(username)
+        hash_guardado = _hash_de(registro) if registro else None
         if not hash_guardado or not check_password_hash(hash_guardado, password):
             logger.warning("Intento de login fallido para usuario=%s", username)
             raise CredencialesInvalidasError("Usuario o contraseña incorrectos.")
         logger.info("Login correcto: %s", username)
+        return _rol_de(registro)
 
-    def emitir_token(self, username):
-        return self._serializador.dumps({"username": username})
+    def emitir_token(self, username, rol):
+        return self._serializador.dumps({"username": username, "rol": rol})
 
-    def usuario_del_token(self, token):
+    def datos_del_token(self, token):
         try:
             datos = self._serializador.loads(token, max_age=DURACION_TOKEN_SEGUNDOS)
         except SignatureExpired as exc:
             raise TokenInvalidoError("El token ha caducado, vuelve a iniciar sesión.") from exc
         except BadSignature as exc:
             raise TokenInvalidoError("Token inválido.") from exc
-        return datos["username"]
+        return {"username": datos["username"], "rol": datos.get("rol", "taxista")}
