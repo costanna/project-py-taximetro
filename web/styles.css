@@ -231,6 +231,27 @@ body {
   gap: 14px;
 }
 
+.enlace {
+  background: none;
+  border: none;
+  color: var(--primario);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 14px 0 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.enlace:hover {
+  text-decoration: underline;
+}
+
+#form-registro {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--borde);
+}
+
 .formulario label {
   display: flex;
   flex-direction: column;

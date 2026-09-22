@@ -16,7 +16,3 @@ services:
         sync: false
       - key: SECRET_KEY
         generateValue: true
-      - key: TARIFA_PARADO
-        sync: false
-      - key: TARIFA_MOVIMIENTO
-        sync: false

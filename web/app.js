@@ -10,6 +10,8 @@
   const botonLogin = $("boton-login");
   const botonLoginTexto = botonLogin.querySelector(".boton__texto");
   const botonLoginSpinner = botonLogin.querySelector(".spinner");
+  const botonMostrarRegistro = $("boton-mostrar-registro");
+  const formRegistro = $("form-registro");
   const errorLogin = $("error-login");
   const errorAccion = $("error-accion");
   const chipEstado = $("chip-estado");
@@ -284,6 +286,32 @@
       botonLogin.disabled = false;
       botonLoginSpinner.hidden = true;
       botonLoginTexto.textContent = "Entrar";
+    }
+  });
+
+  botonMostrarRegistro.addEventListener("click", () => {
+    formRegistro.hidden = !formRegistro.hidden;
+  });
+
+  formRegistro.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    errorLogin.hidden = true;
+    const username = $("input-registro-usuario").value.trim();
+    const password = $("input-registro-password").value;
+    try {
+      await llamarApi("/api/auth/registro", {
+        method: "POST",
+        body: JSON.stringify({ username, password }),
+      });
+      const { token: nuevoToken } = await llamarApi("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ username, password }),
+      });
+      guardarSesion(nuevoToken, username);
+      await mostrarTaximetro();
+    } catch (error) {
+      errorLogin.textContent = error.message;
+      errorLogin.hidden = false;
     }
   });
 
