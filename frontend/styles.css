@@ -158,3 +158,56 @@ button:disabled {
   color: #94a3b8;
   font-weight: 600;
 }
+
+#pantalla-login form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+#pantalla-login label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #94a3b8;
+  text-align: left;
+}
+
+#pantalla-login input {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #f8fafc;
+  font-size: 1rem;
+}
+
+#btn-login,
+#btn-registro {
+  background: #2563eb;
+  color: white;
+  padding: 14px;
+}
+
+#form-registro {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #334155;
+}
+
+.enlace {
+  background: none;
+  border: none;
+  color: #93c5fd;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 12px 0 0;
+  cursor: pointer;
+}
+
+.enlace-logout {
+  float: right;
+  padding: 0;
+  color: #f87171;
+}

@@ -19,3 +19,17 @@ class CarreraOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class RegistroUsuario(BaseModel):
+    username: str
+    password: str
+
+
+class LoginUsuario(BaseModel):
+    username: str
+    password: str
+
+
+class TokenOut(BaseModel):
+    token: str

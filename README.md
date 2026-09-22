@@ -140,6 +140,33 @@ reutilizando la lógica de negocio entre el CLI y la API:
 | 3 — Arquitectura y UX | US-08, US-09 | ✅ | [`taximetro/auth.py`](taximetro/auth.py), [`web/`](web/) |
 | 4 — Producción | — | ✅ | [`taximetro/api.py`](taximetro/api.py) (API REST + BD SQLite + web servida) |
 
+## 🌐 Arquitectura de despliegue (Render + Vercel)
+
+El repositorio contiene **dos implementaciones** del mismo taxímetro:
+
+- [`taximetro/`](taximetro/) + [`web/`](web/): la referencia usada para desarrollar y probar
+  las 4 fases (Flask + SQLite, 44 tests, Docker). Pensada para self-host
+  (`docker compose up`) o para correr en local.
+- [`backend/`](backend/) + [`frontend/`](frontend/): lo que se **despliega de verdad**, en la
+  cuenta personal (`costanna`), no en el repositorio de la organización:
+  - `backend/` — FastAPI + Postgres (Neon), desplegado en **Render**
+    (`render.yaml`, `rootDir: backend`).
+  - `frontend/` — HTML/JS estático, desplegado en **Vercel**, apuntando a
+    la URL de Render (`frontend/config.js`).
+
+Ambas implementaciones cubren las mismas historias de usuario (auth con
+contraseña hasheada, tarifas configurables sin redeploy vía variables de
+entorno, logging estructurado a stdout, tests automatizados: 20 en
+`backend/tests/`). Las tarifas y el `SECRET_KEY` del backend se configuran
+como variables de entorno en Render (ver `backend/.env.example`), no en
+código, y `SECRET_KEY` conviene fijarlo explícitamente (con
+`generateValue: true` en `render.yaml` si se usa Blueprint) para que los
+tokens no caduquen en cada reinicio del servicio.
+
+**Al hacer `git push`, el remoto es `origin` (`github.com/costanna/...`).**
+El remoto `upstream` (`Factoria-F5-madrid/project-py-taximetro`) es solo
+de referencia del enunciado y no debe recibir pushes de este trabajo.
+
 Notas de alcance del prototipo:
 
 - La API modela **un taxi por instancia** (un `Taximetro` en memoria por
@@ -198,10 +225,23 @@ curl -X POST http://localhost:5000/api/auth/registro \
      -d '{"username": "responsable", "password": "cambia-esto"}'
 ```
 
+**Backend FastAPI + frontend (lo que corre en Render/Vercel), en local:**
+
+```bash
+cd backend
+pip install -r requirements-dev.txt
+cp .env.example .env                # rellena DATABASE_URL (Neon) y SECRET_KEY
+uvicorn main:app --reload           # http://localhost:8000
+
+# en otra terminal: sirve frontend/ con cualquier servidor estático
+# y ajusta API_BASE en frontend/config.js a http://localhost:8000
+```
+
 **Tests (unitarios, integración y end-to-end):**
 
 ```bash
-make test                           # o: pytest -v
+make test                           # o: pytest -v          (taximetro/)
+pytest backend/tests -v             #                        (backend/)
 ```
 
 **Lint y formato:**

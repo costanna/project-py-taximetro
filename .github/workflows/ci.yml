@@ -33,3 +33,20 @@ jobs:
 
       - name: Tests (unitarios + integración + e2e)
         run: pytest -v
+
+  backend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias del backend
+        run: pip install -r backend/requirements-dev.txt
+
+      - name: Tests del backend (unitarios + integración)
+        run: pytest backend/tests -v

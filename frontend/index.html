@@ -10,32 +10,50 @@
   <h1>🚕 Taxímetro Digital</h1>
   <p class="subtitulo">TaxiTech Solutions</p>
 
-  <div class="panel">
-    <span id="estado" class="estado inactivo">Sin carrera</span>
-    <div id="importe" class="importe">0.00 €</div>
-
-    <div class="botones">
-      <button id="btn-iniciar">Iniciar carrera</button>
-      <button id="btn-parado" disabled>Parado</button>
-      <button id="btn-movimiento" disabled>En movimiento</button>
-      <button id="btn-finalizar" disabled>Finalizar carrera</button>
-    </div>
-
-    <p id="mensaje" class="mensaje"></p>
+  <div id="pantalla-login" class="panel">
+    <form id="form-login">
+      <label>Usuario<input id="input-usuario" type="text" autocomplete="username" required /></label>
+      <label>Contraseña<input id="input-password" type="password" autocomplete="current-password" required /></label>
+      <button type="submit" id="btn-login">Entrar</button>
+    </form>
+    <p id="mensaje-login" class="mensaje"></p>
+    <button id="btn-mostrar-registro" class="enlace">¿Primera vez? Crea el usuario</button>
+    <form id="form-registro" hidden>
+      <label>Nuevo usuario<input id="input-registro-usuario" type="text" required /></label>
+      <label>Nueva contraseña<input id="input-registro-password" type="password" required /></label>
+      <button type="submit" id="btn-registro">Crear usuario y entrar</button>
+    </form>
   </div>
 
-  <div class="historial">
-    <h2>Historial de carreras</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Estado</th>
-          <th>Importe</th>
-        </tr>
-      </thead>
-      <tbody id="historial-body"></tbody>
-    </table>
+  <div id="pantalla-taximetro" hidden>
+    <div class="panel">
+      <button id="btn-logout" class="enlace enlace-logout">Cerrar sesión</button>
+      <span id="estado" class="estado inactivo">Sin carrera</span>
+      <div id="importe" class="importe">0.00 €</div>
+
+      <div class="botones">
+        <button id="btn-iniciar">Iniciar carrera</button>
+        <button id="btn-parado" disabled>Parado</button>
+        <button id="btn-movimiento" disabled>En movimiento</button>
+        <button id="btn-finalizar" disabled>Finalizar carrera</button>
+      </div>
+
+      <p id="mensaje" class="mensaje"></p>
+    </div>
+
+    <div class="historial">
+      <h2>Historial de carreras</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Estado</th>
+            <th>Importe</th>
+          </tr>
+        </thead>
+        <tbody id="historial-body"></tbody>
+      </table>
+    </div>
   </div>
 
   <script src="config.js"></script>

@@ -1,3 +1,11 @@
+const pantallaLogin = document.getElementById("pantalla-login");
+const pantallaTaximetro = document.getElementById("pantalla-taximetro");
+const formLogin = document.getElementById("form-login");
+const formRegistro = document.getElementById("form-registro");
+const btnMostrarRegistro = document.getElementById("btn-mostrar-registro");
+const mensajeLoginEl = document.getElementById("mensaje-login");
+const btnLogout = document.getElementById("btn-logout");
+
 const estadoEl = document.getElementById("estado");
 const importeEl = document.getElementById("importe");
 const mensajeEl = document.getElementById("mensaje");
@@ -8,8 +16,29 @@ const btnParado = document.getElementById("btn-parado");
 const btnMovimiento = document.getElementById("btn-movimiento");
 const btnFinalizar = document.getElementById("btn-finalizar");
 
+let token = null;
 let carreraId = null;
 let intervalo = null;
+
+try {
+  token = sessionStorage.getItem("taximetro_token");
+} catch {
+  token = null;
+}
+
+function guardarToken(valor) {
+  token = valor;
+  try {
+    sessionStorage.setItem("taximetro_token", valor);
+  } catch {}
+}
+
+function limpiarToken() {
+  token = null;
+  try {
+    sessionStorage.removeItem("taximetro_token");
+  } catch {}
+}
 
 function mostrarMensaje(texto) {
   mensajeEl.textContent = texto || "";
@@ -28,12 +57,33 @@ function activarControles(enCurso) {
   btnFinalizar.disabled = !enCurso;
 }
 
-async function llamarApi(path, options) {
+function mostrarLogin() {
+  clearInterval(intervalo);
+  carreraId = null;
+  pantallaTaximetro.hidden = true;
+  pantallaLogin.hidden = false;
+}
+
+function mostrarTaximetro() {
+  pantallaLogin.hidden = true;
+  pantallaTaximetro.hidden = false;
+  cargarHistorial();
+}
+
+async function llamarApi(path, options = {}) {
   const respuesta = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
     ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers || {}),
+    },
   });
   if (!respuesta.ok) {
+    if (respuesta.status === 401) {
+      limpiarToken();
+      mostrarLogin();
+    }
     const detalle = await respuesta.json().catch(() => ({}));
     throw new Error(detalle.detail || `Error ${respuesta.status}`);
   }
@@ -115,4 +165,56 @@ btnParado.addEventListener("click", () => cambiarEstado("parado"));
 btnMovimiento.addEventListener("click", () => cambiarEstado("movimiento"));
 btnFinalizar.addEventListener("click", finalizarCarrera);
 
-cargarHistorial();
+btnMostrarRegistro.addEventListener("click", () => {
+  formRegistro.hidden = !formRegistro.hidden;
+});
+
+formLogin.addEventListener("submit", async (evento) => {
+  evento.preventDefault();
+  mensajeLoginEl.textContent = "";
+  try {
+    const { token: nuevoToken } = await llamarApi("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({
+        username: document.getElementById("input-usuario").value.trim(),
+        password: document.getElementById("input-password").value,
+      }),
+    });
+    guardarToken(nuevoToken);
+    mostrarTaximetro();
+  } catch (error) {
+    mensajeLoginEl.textContent = error.message;
+  }
+});
+
+formRegistro.addEventListener("submit", async (evento) => {
+  evento.preventDefault();
+  mensajeLoginEl.textContent = "";
+  const username = document.getElementById("input-registro-usuario").value.trim();
+  const password = document.getElementById("input-registro-password").value;
+  try {
+    await llamarApi("/auth/registro", {
+      method: "POST",
+      body: JSON.stringify({ username, password }),
+    });
+    const { token: nuevoToken } = await llamarApi("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ username, password }),
+    });
+    guardarToken(nuevoToken);
+    mostrarTaximetro();
+  } catch (error) {
+    mensajeLoginEl.textContent = error.message;
+  }
+});
+
+btnLogout.addEventListener("click", () => {
+  limpiarToken();
+  mostrarLogin();
+});
+
+if (token) {
+  mostrarTaximetro();
+} else {
+  mostrarLogin();
+}

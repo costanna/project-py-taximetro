@@ -1,7 +1,8 @@
 import datetime
 
-from database import Base
 from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String
+
+from database import Base
 
 
 class Carrera(Base):
@@ -14,3 +15,11 @@ class Carrera(Base):
     inicio = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
     fin = Column(DateTime, nullable=True)
     ultimo_cambio = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
+
+
+class Usuario(Base):
+    __tablename__ = "usuarios"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, nullable=False, index=True)
+    password_hash = Column(String, nullable=False)
