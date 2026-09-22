@@ -43,6 +43,9 @@ class GestorUsuarios:
     def existe_algun_usuario(self):
         return len(self._leer_usuarios()) > 0
 
+    def existe_usuario(self, username):
+        return username in self._leer_usuarios()
+
     def crear_usuario(self, username, password):
         usuarios = self._leer_usuarios()
         usuarios[username] = generate_password_hash(password)

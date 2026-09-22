@@ -38,8 +38,8 @@ def _serializador():
     return URLSafeTimedSerializer(_clave_secreta())
 
 
-def existe_algun_usuario(db: Session) -> bool:
-    return db.query(Usuario).first() is not None
+def existe_usuario(db: Session, username: str) -> bool:
+    return db.query(Usuario).filter(Usuario.username == username).first() is not None
 
 
 def crear_usuario(db: Session, username: str, password: str) -> Usuario:

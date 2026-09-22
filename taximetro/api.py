@@ -45,12 +45,12 @@ def create_app(ruta_bd=None, ruta_usuarios=None, ruta_config=None, servir_web=Tr
 
     @app.post("/api/auth/registro")
     def registro():
-        if gestor_usuarios.existe_algun_usuario():
-            return jsonify(error="Ya existe un usuario registrado."), 409
         datos = request.get_json(silent=True) or {}
         username, password = datos.get("username"), datos.get("password")
         if not username or not password:
             return jsonify(error="username y password son obligatorios."), 400
+        if gestor_usuarios.existe_usuario(username):
+            return jsonify(error="Ese usuario ya existe."), 409
         gestor_usuarios.crear_usuario(username, password)
         return jsonify(mensaje="Usuario creado."), 201
 

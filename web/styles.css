@@ -256,6 +256,7 @@ body {
   transform: translateY(-50%);
   width: 32px;
   height: 32px;
+  padding: 0;
   border: none;
   background: transparent;
   color: var(--texto-suave);
@@ -504,32 +505,6 @@ body {
   border-color: transparent;
   color: white;
   transform: translateY(-2px);
-}
-
-.pie__col h4 {
-  font-family: "Space Grotesk", -apple-system, sans-serif;
-  font-size: 0.85rem;
-  margin: 0 0 10px;
-  color: var(--texto);
-}
-
-.pie__col ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.pie__col a {
-  color: var(--texto-suave);
-  text-decoration: none;
-  font-size: 0.85rem;
-}
-
-.pie__col a:hover {
-  color: var(--marca-rosa);
 }
 
 .pie__abajo {

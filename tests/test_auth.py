@@ -17,6 +17,12 @@ def test_password_nunca_se_guarda_en_texto_plano(gestor, tmp_path):
     assert "supersecreta" not in contenido["taxista1"]
 
 
+def test_existe_usuario_distingue_por_username(gestor):
+    gestor.crear_usuario("taxista1", "supersecreta")
+    assert gestor.existe_usuario("taxista1") is True
+    assert gestor.existe_usuario("taxista2") is False
+
+
 def test_verificar_credenciales_correctas_no_lanza(gestor):
     gestor.crear_usuario("taxista1", "supersecreta")
     gestor.verificar_credenciales("taxista1", "supersecreta")

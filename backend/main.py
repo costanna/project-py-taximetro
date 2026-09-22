@@ -88,8 +88,8 @@ def health():
 
 @app.post("/auth/registro", status_code=201)
 def registro(datos: RegistroUsuario, db: Session = Depends(get_db)):
-    if auth.existe_algun_usuario(db):
-        raise HTTPException(status_code=409, detail="Ya existe un usuario registrado.")
+    if auth.existe_usuario(db, datos.username):
+        raise HTTPException(status_code=409, detail="Ese usuario ya existe.")
     auth.crear_usuario(db, datos.username, datos.password)
     return {"mensaje": "Usuario creado."}
 

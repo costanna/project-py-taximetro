@@ -18,6 +18,12 @@ def db(tmp_path):
         sesion.close()
 
 
+def test_existe_usuario_distingue_por_username(db):
+    auth.crear_usuario(db, "taxista1", "supersecreta")
+    assert auth.existe_usuario(db, "taxista1") is True
+    assert auth.existe_usuario(db, "taxista2") is False
+
+
 def test_password_nunca_se_guarda_en_texto_plano(db):
     usuario = auth.crear_usuario(db, "taxista1", "supersecreta")
     assert usuario.password_hash != "supersecreta"

@@ -56,12 +56,20 @@ def test_historial_incluye_carreras_finalizadas(cliente):
     assert len(cuerpo["carreras"]) == 1
 
 
-def test_no_se_puede_registrar_dos_veces(cliente):
+def test_no_se_puede_registrar_el_mismo_username_dos_veces(cliente):
     registrar_y_loguear(cliente)
     respuesta = cliente.post(
-        "/api/auth/registro", json={"username": "otro", "password": "otra-clave"}
+        "/api/auth/registro", json={"username": "responsable", "password": "otra-clave-123"}
     )
     assert respuesta.status_code == 409
+
+
+def test_se_pueden_registrar_varios_usuarios_distintos(cliente):
+    registrar_y_loguear(cliente)
+    respuesta = cliente.post(
+        "/api/auth/registro", json={"username": "otro", "password": "otra-clave-123"}
+    )
+    assert respuesta.status_code == 201
 
 
 def test_login_con_password_incorrecta_devuelve_401(cliente):
