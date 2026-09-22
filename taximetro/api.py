@@ -67,6 +67,37 @@ def create_app(ruta_bd=None, ruta_usuarios=None, ruta_config=None, servir_web=Tr
         token = gestor_usuarios.emitir_token(username, rol)
         return jsonify(token=token, username=username, rol=rol)
 
+    @app.get("/api/tarifas")
+    @requiere_token
+    def ver_tarifas():
+        return jsonify(
+            tarifa_parado=taximetro.tarifa_parado, tarifa_movimiento=taximetro.tarifa_movimiento
+        )
+
+    @app.patch("/api/tarifas")
+    @requiere_token
+    def actualizar_tarifas():
+        if g.rol != "responsable":
+            return jsonify(error="Solo el responsable de flota puede hacer esto."), 403
+        datos = request.get_json(silent=True) or {}
+        tarifa_parado = datos.get("tarifa_parado")
+        tarifa_movimiento = datos.get("tarifa_movimiento")
+        if not isinstance(tarifa_parado, (int, float)) or not isinstance(
+            tarifa_movimiento, (int, float)
+        ):
+            return jsonify(error="tarifa_parado y tarifa_movimiento son obligatorios."), 400
+        if tarifa_parado <= 0 or tarifa_movimiento <= 0:
+            return jsonify(error="Las tarifas deben ser positivas."), 400
+        taximetro.tarifa_parado = tarifa_parado
+        taximetro.tarifa_movimiento = tarifa_movimiento
+        logger.info(
+            "[%s] Tarifas actualizadas: parado=%.3f movimiento=%.3f",
+            g.username,
+            tarifa_parado,
+            tarifa_movimiento,
+        )
+        return jsonify(tarifa_parado=tarifa_parado, tarifa_movimiento=tarifa_movimiento)
+
     def _estado_json():
         return jsonify(
             en_curso=taximetro.en_curso,

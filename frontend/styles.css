@@ -280,6 +280,50 @@ button:disabled {
   letter-spacing: 0.03em;
 }
 
+.panel-tarifas {
+  width: 100%;
+  max-width: 420px;
+  margin-top: 24px;
+  background: #1e293b;
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.panel-tarifas h2 {
+  font-size: 1rem;
+  color: #cbd5e1;
+  margin-top: 0;
+}
+
+#form-tarifas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#form-tarifas label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+#form-tarifas input {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #f8fafc;
+  font-size: 1rem;
+}
+
+#form-tarifas button {
+  background: #2563eb;
+  color: white;
+  padding: 12px;
+}
+
 .resumen {
   width: 100%;
   max-width: 420px;

@@ -68,6 +68,16 @@
       <p id="mensaje" class="mensaje"></p>
     </div>
 
+    <div id="panel-tarifas" class="panel-tarifas" hidden>
+      <h2>Tarifas (€/segundo)</h2>
+      <form id="form-tarifas">
+        <label>Parado<input id="input-tarifa-parado" type="number" step="0.001" min="0.001" required /></label>
+        <label>En movimiento<input id="input-tarifa-movimiento" type="number" step="0.001" min="0.001" required /></label>
+        <button type="submit">Guardar tarifas</button>
+      </form>
+      <p id="mensaje-tarifas" class="mensaje"></p>
+    </div>
+
     <div id="resumen-conductores" class="resumen" hidden>
       <h2>Totales por conductor</h2>
       <ul id="lista-resumen-conductores"></ul>

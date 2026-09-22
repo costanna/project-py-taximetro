@@ -21,6 +21,11 @@ const rolUsuarioEl = document.getElementById("rol-usuario");
 const resumenConductoresEl = document.getElementById("resumen-conductores");
 const listaResumenConductoresEl = document.getElementById("lista-resumen-conductores");
 const totalGeneralEl = document.getElementById("total-general");
+const panelTarifasEl = document.getElementById("panel-tarifas");
+const formTarifas = document.getElementById("form-tarifas");
+const mensajeTarifasEl = document.getElementById("mensaje-tarifas");
+const inputTarifaParado = document.getElementById("input-tarifa-parado");
+const inputTarifaMovimiento = document.getElementById("input-tarifa-movimiento");
 
 let token = null;
 let nombreUsuario = null;
@@ -84,6 +89,21 @@ function mostrarLogin() {
   pantallaLogin.hidden = false;
 }
 
+async function cargarPanelTarifas() {
+  if (rolUsuario !== "responsable") {
+    panelTarifasEl.hidden = true;
+    return;
+  }
+  panelTarifasEl.hidden = false;
+  try {
+    const tarifas = await llamarApi("/tarifas");
+    inputTarifaParado.value = tarifas.tarifa_parado;
+    inputTarifaMovimiento.value = tarifas.tarifa_movimiento;
+  } catch (error) {
+    mensajeTarifasEl.textContent = `No se pudieron cargar las tarifas: ${error.message}`;
+  }
+}
+
 function mostrarTaximetro() {
   pantallaLogin.hidden = true;
   pantallaTaximetro.hidden = false;
@@ -92,6 +112,7 @@ function mostrarTaximetro() {
     rolUsuarioEl.textContent = rolUsuario === "responsable" ? "responsable de flota" : "taxista";
   }
   cargarHistorial();
+  cargarPanelTarifas();
 }
 
 async function llamarApi(path, options = {}) {
@@ -258,6 +279,23 @@ formRegistro.addEventListener("submit", async (evento) => {
 btnLogout.addEventListener("click", () => {
   limpiarSesion();
   mostrarLogin();
+});
+
+formTarifas.addEventListener("submit", async (evento) => {
+  evento.preventDefault();
+  mensajeTarifasEl.textContent = "";
+  try {
+    await llamarApi("/tarifas", {
+      method: "PATCH",
+      body: JSON.stringify({
+        tarifa_parado: Number(inputTarifaParado.value),
+        tarifa_movimiento: Number(inputTarifaMovimiento.value),
+      }),
+    });
+    mensajeTarifasEl.textContent = "Tarifas actualizadas.";
+  } catch (error) {
+    mensajeTarifasEl.textContent = `No se pudieron guardar: ${error.message}`;
+  }
 });
 
 const pieAnioEl = document.getElementById("pie-anio");

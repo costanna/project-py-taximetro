@@ -170,3 +170,48 @@ def test_dos_apps_no_comparten_estado(dos_apps_independientes, tmp_path):
 
     respuesta = cliente_b.get("/api/carreras/historial", headers=cabeceras(token_a))
     assert respuesta.status_code == 401
+
+
+def test_ver_tarifas_devuelve_los_valores_actuales(cliente):
+    token = registrar_y_loguear(cliente)
+    respuesta = cliente.get("/api/tarifas", headers=cabeceras(token))
+    assert respuesta.status_code == 200
+    cuerpo = respuesta.get_json()
+    assert cuerpo["tarifa_parado"] > 0
+    assert cuerpo["tarifa_movimiento"] > 0
+
+
+def test_responsable_puede_actualizar_tarifas(cliente):
+    token = registrar_y_loguear(cliente)
+    respuesta = cliente.patch(
+        "/api/tarifas",
+        headers=cabeceras(token),
+        json={"tarifa_parado": 0.05, "tarifa_movimiento": 0.09},
+    )
+    assert respuesta.status_code == 200
+    assert respuesta.get_json() == {"tarifa_parado": 0.05, "tarifa_movimiento": 0.09}
+
+    respuesta = cliente.get("/api/tarifas", headers=cabeceras(token))
+    assert respuesta.get_json() == {"tarifa_parado": 0.05, "tarifa_movimiento": 0.09}
+
+
+def test_taxista_no_puede_actualizar_tarifas(cliente):
+    registrar_y_loguear(cliente, username="jefa", password="clave-jefa-123")
+    token_taxista = registrar_y_loguear(cliente, username="conductor_c", password="clave-c-123")
+
+    respuesta = cliente.patch(
+        "/api/tarifas",
+        headers=cabeceras(token_taxista),
+        json={"tarifa_parado": 0.05, "tarifa_movimiento": 0.09},
+    )
+    assert respuesta.status_code == 403
+
+
+def test_actualizar_tarifas_con_valor_negativo_falla(cliente):
+    token = registrar_y_loguear(cliente)
+    respuesta = cliente.patch(
+        "/api/tarifas",
+        headers=cabeceras(token),
+        json={"tarifa_parado": -1, "tarifa_movimiento": 0.09},
+    )
+    assert respuesta.status_code == 400

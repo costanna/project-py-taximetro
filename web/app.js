@@ -24,6 +24,11 @@
   const listaHistorial = $("lista-historial");
   const resumenConductoresEl = $("resumen-conductores");
   const listaResumenConductoresEl = $("lista-resumen-conductores");
+  const panelTarifasEl = $("panel-tarifas");
+  const formTarifas = $("form-tarifas");
+  const mensajeTarifasEl = $("mensaje-tarifas");
+  const inputTarifaParado = $("input-tarifa-parado");
+  const inputTarifaMovimiento = $("input-tarifa-movimiento");
 
   const botonIniciar = $("boton-iniciar");
   const botonParado = $("boton-parado");
@@ -176,6 +181,21 @@
     ocultarBannerConexion();
   }
 
+  async function cargarPanelTarifas() {
+    if (rolUsuario !== "responsable") {
+      panelTarifasEl.hidden = true;
+      return;
+    }
+    panelTarifasEl.hidden = false;
+    try {
+      const tarifas = await llamarApi("/api/tarifas");
+      inputTarifaParado.value = tarifas.tarifa_parado;
+      inputTarifaMovimiento.value = tarifas.tarifa_movimiento;
+    } catch (error) {
+      mensajeTarifasEl.textContent = `No se pudieron cargar las tarifas: ${error.message}`;
+    }
+  }
+
   async function mostrarTaximetro() {
     pantallaLogin.hidden = true;
     pantallaTaximetro.hidden = false;
@@ -186,6 +206,7 @@
     if (nombreUsuarioEl) nombreUsuarioEl.textContent = nombreUsuario || "";
     await sincronizarEstadoActual();
     cargarHistorial();
+    cargarPanelTarifas();
   }
 
   async function sincronizarEstadoActual() {
@@ -335,6 +356,23 @@
   botonLogout.addEventListener("click", () => {
     limpiarSesion();
     mostrarLogin();
+  });
+
+  formTarifas.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    mensajeTarifasEl.textContent = "";
+    try {
+      await llamarApi("/api/tarifas", {
+        method: "PATCH",
+        body: JSON.stringify({
+          tarifa_parado: Number(inputTarifaParado.value),
+          tarifa_movimiento: Number(inputTarifaMovimiento.value),
+        }),
+      });
+      mensajeTarifasEl.textContent = "Tarifas actualizadas.";
+    } catch (error) {
+      mensajeTarifasEl.textContent = `No se pudieron guardar: ${error.message}`;
+    }
   });
 
   botonIniciar.addEventListener("click", () =>
