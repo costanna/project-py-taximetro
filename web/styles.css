@@ -316,42 +316,6 @@ body {
   width: 100%;
 }
 
-.campo-clave {
-  position: relative;
-  display: flex;
-}
-
-.campo-clave input::-ms-reveal,
-.campo-clave input::-ms-clear {
-  display: none;
-}
-
-.campo-clave input {
-  padding-right: 42px;
-}
-
-.boton-ver-clave {
-  position: absolute;
-  right: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--texto-suave);
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.boton-ver-clave:hover {
-  color: var(--texto);
-  background: var(--borde);
-}
 
 .error {
   color: #dc2626;

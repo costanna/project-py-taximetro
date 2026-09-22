@@ -30,20 +30,6 @@
   const botonMovimiento = $("boton-movimiento");
   const botonFinalizar = $("boton-finalizar");
 
-  document.querySelectorAll(".boton-ver-clave").forEach((boton) => {
-    const input = document.getElementById(boton.dataset.input);
-    if (!input) return;
-    boton.addEventListener("click", () => {
-      const mostrar = input.type === "password";
-      input.type = mostrar ? "text" : "password";
-      boton.setAttribute("aria-pressed", String(mostrar));
-      boton.setAttribute("aria-label", mostrar ? "Ocultar contraseña" : "Mostrar contraseña");
-      boton.title = mostrar ? "Ocultar contraseña" : "Mostrar contraseña";
-      boton.querySelector(".icono-ver").hidden = mostrar;
-      boton.querySelector(".icono-ocultar").hidden = !mostrar;
-    });
-  });
-
   let token = null;
   let nombreUsuario = null;
   let rolUsuario = null;

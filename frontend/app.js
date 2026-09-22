@@ -16,20 +16,6 @@ const btnParado = document.getElementById("btn-parado");
 const btnMovimiento = document.getElementById("btn-movimiento");
 const btnFinalizar = document.getElementById("btn-finalizar");
 
-document.querySelectorAll(".boton-ver-clave").forEach((boton) => {
-  const input = document.getElementById(boton.dataset.input);
-  if (!input) return;
-  boton.addEventListener("click", () => {
-    const mostrar = input.type === "password";
-    input.type = mostrar ? "text" : "password";
-    boton.setAttribute("aria-pressed", String(mostrar));
-    boton.setAttribute("aria-label", mostrar ? "Ocultar contraseña" : "Mostrar contraseña");
-    boton.title = mostrar ? "Ocultar contraseña" : "Mostrar contraseña";
-    boton.querySelector(".icono-ver").hidden = mostrar;
-    boton.querySelector(".icono-ocultar").hidden = !mostrar;
-  });
-});
-
 const nombreUsuarioEl = document.getElementById("nombre-usuario");
 const rolUsuarioEl = document.getElementById("rol-usuario");
 const resumenConductoresEl = document.getElementById("resumen-conductores");
