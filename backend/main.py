@@ -62,10 +62,15 @@ def _con_importe_en_vivo(carrera: Carrera) -> Carrera:
     return carrera
 
 
-def _obtener_carrera_activa(carrera_id: int, db: Session) -> Carrera:
+def _obtener_carrera_propia(carrera_id: int, db: Session, usuario: str) -> Carrera:
     carrera = db.get(Carrera, carrera_id)
-    if carrera is None:
+    if carrera is None or carrera.usuario != usuario:
         raise HTTPException(status_code=404, detail="Carrera no encontrada")
+    return carrera
+
+
+def _obtener_carrera_activa(carrera_id: int, db: Session, usuario: str) -> Carrera:
+    carrera = _obtener_carrera_propia(carrera_id, db, usuario)
     if not carrera.en_curso:
         raise HTTPException(status_code=409, detail="La carrera ya ha finalizado")
     return carrera
@@ -107,6 +112,7 @@ def login(datos: LoginUsuario, db: Session = Depends(get_db)):
 def iniciar_carrera(db: Session = Depends(get_db), usuario: str = Depends(requiere_token)):
     ahora = datetime.datetime.utcnow()
     carrera = Carrera(
+        usuario=usuario,
         estado="parado",
         importe_acumulado=0.0,
         en_curso=True,
@@ -127,7 +133,7 @@ def cambiar_estado(
     db: Session = Depends(get_db),
     usuario: str = Depends(requiere_token),
 ):
-    carrera = _obtener_carrera_activa(carrera_id, db)
+    carrera = _obtener_carrera_activa(carrera_id, db, usuario)
     if cambio.estado != carrera.estado:
         _acumular_hasta_ahora(carrera)
         carrera.estado = cambio.estado
@@ -141,7 +147,7 @@ def cambiar_estado(
 def finalizar_carrera(
     carrera_id: int, db: Session = Depends(get_db), usuario: str = Depends(requiere_token)
 ):
-    carrera = _obtener_carrera_activa(carrera_id, db)
+    carrera = _obtener_carrera_activa(carrera_id, db, usuario)
     _acumular_hasta_ahora(carrera)
     carrera.en_curso = False
     carrera.fin = datetime.datetime.utcnow()
@@ -155,7 +161,9 @@ def finalizar_carrera(
 
 @app.get("/carreras", response_model=list[CarreraOut])
 def listar_carreras(db: Session = Depends(get_db), usuario: str = Depends(requiere_token)):
-    carreras = db.query(Carrera).order_by(Carrera.inicio.desc()).all()
+    carreras = (
+        db.query(Carrera).filter(Carrera.usuario == usuario).order_by(Carrera.inicio.desc()).all()
+    )
     return [_con_importe_en_vivo(c) for c in carreras]
 
 
@@ -163,7 +171,5 @@ def listar_carreras(db: Session = Depends(get_db), usuario: str = Depends(requie
 def obtener_carrera(
     carrera_id: int, db: Session = Depends(get_db), usuario: str = Depends(requiere_token)
 ):
-    carrera = db.get(Carrera, carrera_id)
-    if carrera is None:
-        raise HTTPException(status_code=404, detail="Carrera no encontrada")
+    carrera = _obtener_carrera_propia(carrera_id, db, usuario)
     return _con_importe_en_vivo(carrera)

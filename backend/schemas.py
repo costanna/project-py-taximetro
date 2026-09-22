@@ -10,6 +10,7 @@ class CambioEstado(BaseModel):
 
 class CarreraOut(BaseModel):
     id: int
+    usuario: Optional[str] = None
     estado: str
     importe_acumulado: float
     importe_en_vivo: float = 0.0

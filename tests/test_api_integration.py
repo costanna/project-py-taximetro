@@ -97,6 +97,19 @@ def test_estado_invalido_devuelve_400(cliente):
     assert respuesta.status_code == 400
 
 
+def test_cada_usuario_solo_ve_su_propio_historial(cliente):
+    token_a = registrar_y_loguear(cliente, username="conductor_a", password="clave-a-123")
+    token_b = registrar_y_loguear(cliente, username="conductor_b", password="clave-b-123")
+
+    cliente.post("/api/carreras/iniciar", headers=cabeceras(token_a))
+    cliente.post("/api/carreras/finalizar", headers=cabeceras(token_a))
+
+    historial_a = cliente.get("/api/carreras/historial", headers=cabeceras(token_a)).get_json()
+    historial_b = cliente.get("/api/carreras/historial", headers=cabeceras(token_b)).get_json()
+    assert len(historial_a["carreras"]) == 1
+    assert len(historial_b["carreras"]) == 0
+
+
 def test_token_invalido_es_rechazado(cliente):
     respuesta = cliente.get(
         "/api/carreras/historial", headers={"Authorization": "Bearer token-falso"}

@@ -107,7 +107,7 @@ def create_app(ruta_bd=None, ruta_usuarios=None, ruta_config=None, servir_web=Tr
             resumen = taximetro.finalizar_carrera()
         except CarreraNoIniciadaError as exc:
             return jsonify(error=str(exc)), 409
-        id_carrera = almacen.guardar_carrera(resumen)
+        id_carrera = almacen.guardar_carrera(resumen, usuario=g.username)
         logger.info(
             "[%s] Carrera #%s finalizada: %.2f €", g.username, id_carrera, resumen["importe_total"]
         )
@@ -118,8 +118,8 @@ def create_app(ruta_bd=None, ruta_usuarios=None, ruta_config=None, servir_web=Tr
     def historial():
         limite = request.args.get("limite", type=int)
         return jsonify(
-            carreras=almacen.historial(limite=limite),
-            total_recaudado_hoy=round(almacen.total_recaudado_hoy(), 2),
+            carreras=almacen.historial(usuario=g.username, limite=limite),
+            total_recaudado_hoy=round(almacen.total_recaudado_hoy(usuario=g.username), 2),
         )
 
     if servir_web and RUTA_WEB.exists():

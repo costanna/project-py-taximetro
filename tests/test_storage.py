@@ -55,3 +55,21 @@ def test_total_recaudado_hoy_suma_solo_carreras_de_hoy(almacen):
     almacen.guardar_carrera(resumen(ahora - 60, ahora, 4.5))
     almacen.guardar_carrera(resumen(ahora - 30, ahora - 10, 2.0))
     assert almacen.total_recaudado_hoy() == pytest.approx(6.5)
+
+
+def test_historial_filtra_por_usuario(almacen):
+    almacen.guardar_carrera(resumen(1_000, 1_060, 3.0), usuario="conductor_a")
+    almacen.guardar_carrera(resumen(1_100, 1_160, 2.5), usuario="conductor_b")
+
+    historial_a = almacen.historial(usuario="conductor_a")
+    assert len(historial_a) == 1
+    assert historial_a[0]["usuario"] == "conductor_a"
+
+
+def test_total_recaudado_hoy_filtra_por_usuario(almacen):
+    import time
+
+    ahora = time.time()
+    almacen.guardar_carrera(resumen(ahora - 60, ahora, 4.5), usuario="conductor_a")
+    almacen.guardar_carrera(resumen(ahora - 30, ahora - 10, 2.0), usuario="conductor_b")
+    assert almacen.total_recaudado_hoy(usuario="conductor_a") == pytest.approx(4.5)

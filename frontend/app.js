@@ -30,27 +30,36 @@ document.querySelectorAll(".boton-ver-clave").forEach((boton) => {
   });
 });
 
+const nombreUsuarioEl = document.getElementById("nombre-usuario");
+
 let token = null;
+let nombreUsuario = null;
 let carreraId = null;
 let intervalo = null;
 
 try {
   token = sessionStorage.getItem("taximetro_token");
+  nombreUsuario = sessionStorage.getItem("taximetro_usuario");
 } catch {
   token = null;
+  nombreUsuario = null;
 }
 
-function guardarToken(valor) {
-  token = valor;
+function guardarSesion(valorToken, valorUsuario) {
+  token = valorToken;
+  nombreUsuario = valorUsuario;
   try {
-    sessionStorage.setItem("taximetro_token", valor);
+    sessionStorage.setItem("taximetro_token", valorToken);
+    sessionStorage.setItem("taximetro_usuario", valorUsuario);
   } catch {}
 }
 
-function limpiarToken() {
+function limpiarSesion() {
   token = null;
+  nombreUsuario = null;
   try {
     sessionStorage.removeItem("taximetro_token");
+    sessionStorage.removeItem("taximetro_usuario");
   } catch {}
 }
 
@@ -81,6 +90,7 @@ function mostrarLogin() {
 function mostrarTaximetro() {
   pantallaLogin.hidden = true;
   pantallaTaximetro.hidden = false;
+  if (nombreUsuarioEl) nombreUsuarioEl.textContent = nombreUsuario || "";
   cargarHistorial();
 }
 
@@ -95,7 +105,7 @@ async function llamarApi(path, options = {}) {
   });
   if (!respuesta.ok) {
     if (respuesta.status === 401) {
-      limpiarToken();
+      limpiarSesion();
       mostrarLogin();
     }
     const detalle = await respuesta.json().catch(() => ({}));
@@ -186,15 +196,16 @@ btnMostrarRegistro.addEventListener("click", () => {
 formLogin.addEventListener("submit", async (evento) => {
   evento.preventDefault();
   mensajeLoginEl.textContent = "";
+  const username = document.getElementById("input-usuario").value.trim();
   try {
     const { token: nuevoToken } = await llamarApi("/auth/login", {
       method: "POST",
       body: JSON.stringify({
-        username: document.getElementById("input-usuario").value.trim(),
+        username,
         password: document.getElementById("input-password").value,
       }),
     });
-    guardarToken(nuevoToken);
+    guardarSesion(nuevoToken, username);
     mostrarTaximetro();
   } catch (error) {
     mensajeLoginEl.textContent = error.message;
@@ -215,7 +226,7 @@ formRegistro.addEventListener("submit", async (evento) => {
       method: "POST",
       body: JSON.stringify({ username, password }),
     });
-    guardarToken(nuevoToken);
+    guardarSesion(nuevoToken, username);
     mostrarTaximetro();
   } catch (error) {
     mensajeLoginEl.textContent = error.message;
@@ -223,7 +234,7 @@ formRegistro.addEventListener("submit", async (evento) => {
 });
 
 btnLogout.addEventListener("click", () => {
-  limpiarToken();
+  limpiarSesion();
   mostrarLogin();
 });
 

@@ -61,7 +61,7 @@ def pedir_comando():
     return comando
 
 
-def ejecutar_carrera(taximetro, almacen):
+def ejecutar_carrera(taximetro, almacen, username):
     taximetro.iniciar_carrera()
     logger.info("Carrera iniciada.")
     print("\n🚕 Carrera iniciada. Estado inicial: PARADO.")
@@ -82,7 +82,7 @@ def ejecutar_carrera(taximetro, almacen):
                 print(f"\nYa estás en estado '{ESTADO_PARADO.upper()}'.")
         elif comando == "f":
             resumen = taximetro.finalizar_carrera()
-            almacen.guardar_carrera(resumen)
+            almacen.guardar_carrera(resumen, usuario=username)
             logger.info("Carrera finalizada: %.2f €", resumen["importe_total"])
             print(
                 f"\n🏁 Carrera finalizada. Importe total a cobrar: {resumen['importe_total']:.2f} €"
@@ -97,7 +97,7 @@ def main():
     logger.info("Taxímetro arrancado. Tarifas: %s", tarifas)
 
     mostrar_instrucciones(taximetro)
-    autenticar(gestor_usuarios)
+    username = autenticar(gestor_usuarios)
 
     while True:
         respuesta = input("\n¿Iniciar nueva carrera? (s/n): ").strip().lower()
@@ -105,7 +105,7 @@ def main():
             print("\n👋 Fin del turno. ¡Buen día!")
             logger.info("Fin del turno.")
             break
-        ejecutar_carrera(taximetro, almacen)
+        ejecutar_carrera(taximetro, almacen, username)
 
 
 if __name__ == "__main__":

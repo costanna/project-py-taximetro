@@ -14,6 +14,7 @@
   const errorAccion = $("error-accion");
   const chipEstado = $("chip-estado");
   const botonLogout = $("boton-logout");
+  const nombreUsuarioEl = $("nombre-usuario");
   const importeActual = $("importe-actual");
   const duracionActual = $("duracion-actual");
   const totalHoy = $("total-hoy");
@@ -39,6 +40,7 @@
   });
 
   let token = null;
+  let nombreUsuario = null;
   let intervaloActualizacion = null;
   let fallosConsecutivos = 0;
   let errorAccionTimeout = null;
@@ -56,22 +58,28 @@
 
   try {
     token = sessionStorage.getItem("taximetro_token");
+    nombreUsuario = sessionStorage.getItem("taximetro_usuario");
   } catch {
     token = null;
+    nombreUsuario = null;
   }
 
-  function guardarToken(valor) {
-    token = valor;
+  function guardarSesion(valorToken, valorUsuario) {
+    token = valorToken;
+    nombreUsuario = valorUsuario;
     try {
-      sessionStorage.setItem("taximetro_token", valor);
+      sessionStorage.setItem("taximetro_token", valorToken);
+      sessionStorage.setItem("taximetro_usuario", valorUsuario);
     } catch {
     }
   }
 
-  function limpiarToken() {
+  function limpiarSesion() {
     token = null;
+    nombreUsuario = null;
     try {
       sessionStorage.removeItem("taximetro_token");
+      sessionStorage.removeItem("taximetro_usuario");
     } catch {
     }
   }
@@ -93,7 +101,7 @@
     const cuerpo = await respuesta.json().catch(() => ({}));
     if (!respuesta.ok) {
       if (respuesta.status === 401) {
-        limpiarToken();
+        limpiarSesion();
         mostrarLogin();
       }
       throw new ErrorApi(cuerpo.error || `Error ${respuesta.status}`, { status: respuesta.status });
@@ -165,6 +173,7 @@
     pantallaLogin.hidden = false;
     chipEstado.hidden = true;
     botonLogout.hidden = true;
+    if (nombreUsuarioEl) nombreUsuarioEl.textContent = "";
     ocultarBannerConexion();
   }
 
@@ -172,6 +181,7 @@
     pantallaLogin.hidden = true;
     pantallaTaximetro.hidden = false;
     botonLogout.hidden = false;
+    if (nombreUsuarioEl) nombreUsuarioEl.textContent = nombreUsuario || "";
     await sincronizarEstadoActual();
     cargarHistorial();
   }
@@ -256,15 +266,16 @@
     botonLogin.disabled = true;
     botonLoginSpinner.hidden = false;
     botonLoginTexto.textContent = "Entrando…";
+    const username = $("input-usuario").value.trim();
     try {
       const { token: nuevoToken } = await llamarApi("/api/auth/login", {
         method: "POST",
         body: JSON.stringify({
-          username: $("input-usuario").value.trim(),
+          username,
           password: $("input-password").value,
         }),
       });
-      guardarToken(nuevoToken);
+      guardarSesion(nuevoToken, username);
       await mostrarTaximetro();
     } catch (error) {
       errorLogin.textContent = error.message;
@@ -277,7 +288,7 @@
   });
 
   botonLogout.addEventListener("click", () => {
-    limpiarToken();
+    limpiarSesion();
     mostrarLogin();
   });
 

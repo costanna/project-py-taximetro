@@ -89,3 +89,33 @@ def test_carrera_inexistente_devuelve_404(cliente):
 def test_token_invalido_es_rechazado(cliente):
     respuesta = cliente.get("/carreras", headers={"Authorization": "Bearer token-falso"})
     assert respuesta.status_code == 401
+
+
+def test_cada_usuario_solo_ve_su_propio_historial(cliente):
+    token_a = registrar_y_loguear(cliente, username="conductor_a", password="clave-a-12345")
+    token_b = registrar_y_loguear(cliente, username="conductor_b", password="clave-b-12345")
+
+    carrera_a = cliente.post("/carreras", headers=cabeceras(token_a)).json()
+    cliente.post(f"/carreras/{carrera_a['id']}/finalizar", headers=cabeceras(token_a))
+
+    historial_a = cliente.get("/carreras", headers=cabeceras(token_a)).json()
+    historial_b = cliente.get("/carreras", headers=cabeceras(token_b)).json()
+    assert len(historial_a) == 1
+    assert len(historial_b) == 0
+
+
+def test_no_se_puede_acceder_a_la_carrera_de_otro_usuario(cliente):
+    token_a = registrar_y_loguear(cliente, username="conductor_a", password="clave-a-12345")
+    token_b = registrar_y_loguear(cliente, username="conductor_b", password="clave-b-12345")
+
+    carrera_a = cliente.post("/carreras", headers=cabeceras(token_a)).json()
+
+    respuesta = cliente.get(f"/carreras/{carrera_a['id']}", headers=cabeceras(token_b))
+    assert respuesta.status_code == 404
+
+    respuesta = cliente.patch(
+        f"/carreras/{carrera_a['id']}/estado",
+        headers=cabeceras(token_b),
+        json={"estado": "movimiento"},
+    )
+    assert respuesta.status_code == 404

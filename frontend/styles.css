@@ -238,6 +238,11 @@ button:disabled {
   display: flex;
 }
 
+.campo-clave input::-ms-reveal,
+.campo-clave input::-ms-clear {
+  display: none;
+}
+
 .campo-clave input {
   padding-right: 42px;
 }
@@ -294,6 +299,12 @@ button:disabled {
   float: right;
   padding: 0;
   color: #f87171;
+}
+
+.sesion-usuario {
+  margin: 0 0 12px;
+  color: #94a3b8;
+  font-size: 0.85rem;
 }
 
 .pie {

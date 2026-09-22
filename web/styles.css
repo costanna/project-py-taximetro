@@ -133,6 +133,15 @@ body {
   gap: 10px;
 }
 
+.navbar__usuario {
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+
+.navbar__usuario:empty {
+  display: none;
+}
+
 .navbar__icono {
   display: inline-flex;
   align-items: center;
@@ -243,6 +252,11 @@ body {
 .campo-clave {
   position: relative;
   display: flex;
+}
+
+.campo-clave input::-ms-reveal,
+.campo-clave input::-ms-clear {
+  display: none;
 }
 
 .campo-clave input {

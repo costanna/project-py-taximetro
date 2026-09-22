@@ -9,6 +9,7 @@ class Carrera(Base):
     __tablename__ = "carreras"
 
     id = Column(Integer, primary_key=True, index=True)
+    usuario = Column(String, nullable=True, index=True)
     estado = Column(String, nullable=False, default="parado")
     importe_acumulado = Column(Float, nullable=False, default=0.0)
     en_curso = Column(Boolean, nullable=False, default=True)
