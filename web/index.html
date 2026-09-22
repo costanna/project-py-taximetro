@@ -5,20 +5,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0f7a5c" />
   <title>Taxímetro Digital</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=JetBrains+Mono:wght@500&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <header class="navbar">
+    <div class="navbar__inner">
+      <a
+        class="navbar__marca"
+        href="https://github.com/costanna/project-py-taximetro"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <span class="navbar__logo" aria-hidden="true">🚕</span>
+        <span class="navbar__nombre">Taxímetro Digital</span>
+      </a>
+      <div class="navbar__controles">
+        <span id="chip-estado" class="chip chip--parado" role="status" aria-live="polite" hidden>PARADO</span>
+        <button id="boton-logout" class="boton-icono" type="button" title="Cerrar sesión" hidden>⏻</button>
+        <a
+          class="navbar__icono"
+          href="https://github.com/costanna/project-py-taximetro"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Ver el código en GitHub"
+          aria-label="Ver el código en GitHub"
+        >
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true">
+            <path
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
+            />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
   <p id="banner-conexion" class="banner-conexion" role="status" hidden></p>
 
   <main class="app">
-    <header class="app__header">
-      <h1>🚕 Taxímetro Digital</h1>
-      <div class="app__header-derecha">
-        <span id="chip-estado" class="chip chip--parado" role="status" aria-live="polite" hidden>PARADO</span>
-        <button id="boton-logout" class="boton-icono" type="button" title="Cerrar sesión" hidden>⏻</button>
-      </div>
-    </header>
-
     <section id="pantalla-login" class="tarjeta">
       <h2>Acceso</h2>
       <p class="ayuda">Introduce tus credenciales para operar el taxímetro.</p>
@@ -58,6 +88,56 @@
       </details>
     </section>
   </main>
+
+  <footer class="pie">
+    <div class="pie__inner pie__grid">
+      <div class="pie__marca">
+        <div class="pie__marca-linea">
+          <span class="pie__logo" aria-hidden="true">🚕</span>
+          <span class="pie__nombre">TaxiTech Solutions</span>
+        </div>
+        <p>Taxímetro digital para flotas de taxi — prototipo de las 4 fases del proyecto.</p>
+        <div class="pie__redes">
+          <a
+            href="https://github.com/costanna/project-py-taximetro"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Repositorio en GitHub"
+          >
+            <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true">
+              <path
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
+              />
+            </svg>
+          </a>
+          <a
+            href="https://www.linkedin.com/in/costanna/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="LinkedIn de la autora"
+          >
+            <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true">
+              <path
+                d="M0 1.15C0 .52.53 0 1.19 0h13.62C15.47 0 16 .52 16 1.15v13.7c0 .63-.53 1.15-1.19 1.15H1.19C.53 16 0 15.48 0 14.85V1.15ZM4.75 6.02H2.4V13.5h2.35V6.02ZM3.58 5C4.35 5 5 4.4 5 3.63a1.4 1.4 0 0 0-2.8 0C2.2 4.4 2.8 5 3.58 5Zm4.6 1.02H6v7.48h2.28V9.7c0-1.06.2-2.09 1.52-2.09 1.3 0 1.32 1.22 1.32 2.16v3.73H13.5V9.35c0-2.02-.43-3.57-2.79-3.57-1.13 0-1.89.62-2.2 1.2h-.03V6.02Z"
+              />
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="pie__col">
+        <h4>Proyecto</h4>
+        <ul>
+          <li><a href="https://github.com/costanna/project-py-taximetro" target="_blank" rel="noopener noreferrer">Código fuente</a></li>
+          <li><a href="https://github.com/costanna/project-py-taximetro#readme" target="_blank" rel="noopener noreferrer">Documentación</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pie__abajo">
+      <p>&copy; <span id="pie-anio"></span> TaxiTech Solutions — hecho por Anna Costa</p>
+    </div>
+  </footer>
 
   <script src="app.js"></script>
 </body>

@@ -213,6 +213,9 @@ btnLogout.addEventListener("click", () => {
   mostrarLogin();
 });
 
+const pieAnioEl = document.getElementById("pie-anio");
+if (pieAnioEl) pieAnioEl.textContent = new Date().getFullYear();
+
 if (token) {
   mostrarTaximetro();
 } else {

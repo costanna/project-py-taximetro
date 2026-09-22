@@ -311,6 +311,9 @@
     else ocultarBannerConexion();
   });
 
+  const pieAnio = $("pie-anio");
+  if (pieAnio) pieAnio.textContent = new Date().getFullYear();
+
   if (token) {
     mostrarTaximetro();
   } else {

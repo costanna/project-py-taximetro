@@ -11,6 +11,8 @@
   --borde: #e2e5ea;
   --aviso: #b45309;
   --aviso-fondo: #fef3c7;
+  --marca-rosa: #d6127c;
+  --marca-violeta: #7c3aed;
   color-scheme: light;
 }
 
@@ -22,6 +24,8 @@
     --texto-suave: #a2acba;
     --borde: #2a2e37;
     --aviso-fondo: #3a2c0f;
+    --marca-rosa: #ff299c;
+    --marca-violeta: #8b5cf6;
     color-scheme: dark;
   }
 }
@@ -33,6 +37,8 @@
   --texto-suave: #a2acba;
   --borde: #2a2e37;
   --aviso-fondo: #3a2c0f;
+  --marca-rosa: #ff299c;
+  --marca-violeta: #8b5cf6;
   color-scheme: dark;
 }
 
@@ -42,8 +48,8 @@
 
 body {
   margin: 0;
-  padding-block: 24px;
-  padding-inline: 16px;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   background: var(--fondo);
   color: var(--texto);
   font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -74,28 +80,76 @@ body {
 .app {
   max-width: 480px;
   margin: 0 auto;
+  padding: 20px 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.app__header {
+.navbar {
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borde);
+}
+
+.navbar__inner {
+  max-width: 480px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
+  padding: 12px 16px;
 }
 
-.app__header h1 {
-  font-size: 1.4rem;
-  margin: 0;
-}
-
-.app__header-derecha {
+.navbar__marca {
   display: flex;
   align-items: center;
   gap: 10px;
+  text-decoration: none;
+}
+
+.navbar__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--marca-rosa), var(--marca-violeta));
+  font-size: 1rem;
+}
+
+.navbar__nombre {
+  font-family: "Space Grotesk", -apple-system, sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--texto);
+}
+
+.navbar__controles {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navbar__icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--borde);
+  color: var(--texto-suave);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.navbar__icono:hover {
+  background: linear-gradient(135deg, var(--marca-rosa), var(--marca-violeta));
+  border-color: transparent;
+  color: white;
 }
 
 .boton-icono {
@@ -339,4 +393,123 @@ body {
 @media (max-width: 400px) {
   .importe__valor { font-size: 2.6rem; }
   .boton--grande { min-height: 60px; font-size: 0.95rem; }
+}
+
+.pie {
+  background: var(--superficie);
+  border-top: 1px solid var(--borde);
+  margin-top: 32px;
+}
+
+.pie__inner {
+  max-width: 480px;
+  margin: 0 auto;
+  padding-inline: 16px;
+}
+
+.pie__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-block: 24px;
+}
+
+.pie__marca {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pie__marca-linea {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pie__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--marca-rosa), var(--marca-violeta));
+  font-size: 0.9rem;
+}
+
+.pie__nombre {
+  font-family: "Space Grotesk", -apple-system, sans-serif;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.pie__marca p {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.pie__redes {
+  display: flex;
+  gap: 10px;
+}
+
+.pie__redes a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--borde);
+  color: var(--texto);
+  transition: all 0.2s ease;
+}
+
+.pie__redes a:hover {
+  background: linear-gradient(135deg, var(--marca-rosa), var(--marca-violeta));
+  border-color: transparent;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.pie__col h4 {
+  font-family: "Space Grotesk", -apple-system, sans-serif;
+  font-size: 0.85rem;
+  margin: 0 0 10px;
+  color: var(--texto);
+}
+
+.pie__col ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pie__col a {
+  color: var(--texto-suave);
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.pie__col a:hover {
+  color: var(--marca-rosa);
+}
+
+.pie__abajo {
+  border-top: 1px solid var(--borde);
+  padding-block: 14px;
+  padding-inline: 16px;
+  text-align: center;
+}
+
+.pie__abajo p {
+  margin: 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  color: var(--texto-suave);
 }
