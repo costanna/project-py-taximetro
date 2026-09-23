@@ -97,8 +97,7 @@ function activarControles(enCurso) {
 }
 
 function mostrarLogin() {
-  clearInterval(intervalo);
-  carreraId = null;
+  resetearPanel();
   pantallaTaximetro.hidden = true;
   pantallaLogin.hidden = false;
 }
@@ -118,6 +117,15 @@ async function cargarPanelTarifas() {
   }
 }
 
+function resetearPanel() {
+  clearInterval(intervalo);
+  carreraId = null;
+  estadoEl.textContent = "Sin carrera";
+  estadoEl.className = "estado inactivo";
+  importeEl.textContent = "0.00 €";
+  activarControles(false);
+}
+
 function mostrarTaximetro() {
   pantallaLogin.hidden = true;
   pantallaTaximetro.hidden = false;
@@ -125,6 +133,7 @@ function mostrarTaximetro() {
   if (rolUsuarioEl) {
     rolUsuarioEl.textContent = rolUsuario === "responsable" ? "responsable de flota" : "taxista";
   }
+  resetearPanel();
   cargarHistorial();
   cargarPanelTarifas();
 }
@@ -236,6 +245,14 @@ async function cargarHistorial() {
       historialBody.appendChild(fila);
     });
     mostrarResumenPorConductor(carreras);
+
+    const activa = carreras.find((carrera) => carrera.en_curso && carrera.usuario === nombreUsuario);
+    if (activa && !carreraId) {
+      carreraId = activa.id;
+      actualizarPanel(activa);
+      activarControles(true);
+      intervalo = setInterval(refrescarCarreraActual, 1000);
+    }
   } catch (error) {
     mostrarMensaje(`No se pudo cargar el historial: ${error.message}`);
   }
