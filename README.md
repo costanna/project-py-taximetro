@@ -23,6 +23,17 @@
 
 ---
 
+## 🔗 Demo en vivo
+
+- **App:** [taxy-py.vercel.app](https://taxy-py.vercel.app/)
+- **API:** [taximetro-api.onrender.com/health](https://taximetro-api.onrender.com/health)
+
+El backend está en el plan gratuito de Render: si lleva un rato sin uso, la
+primera petición puede tardar unos segundos en "despertar" (cold start).
+Ábrela un par de minutos antes de una demo en directo.
+
+---
+
 ## 📩 Contexto del Encargo
 
 El equipo de operaciones de **TaxiTech Solutions** lleva desde 2018 usando taxímetros físicos de la marca Hale modelo T200. El fabricante dejó de dar soporte en 2023 y los dispositivos están empezando a fallar en flota.
@@ -145,7 +156,7 @@ reutilizando la lógica de negocio entre el CLI y la API:
 El repositorio contiene **dos implementaciones** del mismo taxímetro:
 
 - [`taximetro/`](taximetro/) + [`web/`](web/): la referencia usada para desarrollar y probar
-  las 4 fases (Flask + SQLite, 44 tests, Docker). Pensada para self-host
+  las 4 fases (Flask + SQLite, 57 tests, Docker). Pensada para self-host
   (`docker compose up`) o para correr en local.
 - [`backend/`](backend/) + [`frontend/`](frontend/): lo que se **despliega de verdad**, en la
   cuenta personal (`costanna`), no en el repositorio de la organización:
@@ -154,12 +165,18 @@ El repositorio contiene **dos implementaciones** del mismo taxímetro:
   - `frontend/` — HTML/JS estático, desplegado en **Vercel**, apuntando a
     la URL de Render (`frontend/config.js`).
 
-Ambas implementaciones cubren las mismas historias de usuario (auth con
-contraseña hasheada, tarifas configurables sin redeploy vía variables de
-entorno, logging estructurado a stdout, tests automatizados: 20 en
-`backend/tests/`). Las tarifas y el `SECRET_KEY` del backend se configuran
-como variables de entorno en Render (ver `backend/.env.example`), no en
-código, y `SECRET_KEY` conviene fijarlo explícitamente (con
+Ambas implementaciones cubren las mismas historias de usuario: auth con
+contraseña hasheada, roles (**responsable de flota** ve el historial de
+todos los conductores con el total de cada uno y el total general;
+**taxista** solo el suyo — el primer usuario que se registra en cada
+instalación es automáticamente el responsable), tarifas cambiables en
+caliente desde un panel en la propia web (sin redeploy: se guardan en
+la base de datos, no en fichero ni en variables de entorno) y logging
+estructurado a stdout. 92 tests automatizados en total (57 en
+`tests/` + 35 en `backend/tests/`).
+
+`SECRET_KEY` se configura como variable de entorno en Render (ver
+`backend/.env.example`) — conviene fijarlo explícitamente (con
 `generateValue: true` en `render.yaml` si se usa Blueprint) para que los
 tokens no caduquen en cada reinicio del servicio.
 
